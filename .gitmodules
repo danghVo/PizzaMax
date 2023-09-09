@@ -1,0 +1,3 @@
+[submodule "pizzamax-frontend"]
+	path = pizzamax-frontend
+	url = ./pizzamax-frontend
