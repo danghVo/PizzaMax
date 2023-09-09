@@ -1,0 +1,102 @@
+.location-modal {
+    width: 500px;
+    min-height: 418px;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.modal-logo {
+    width: 200px;
+    height: 100px;
+    display: flex;
+    justify-content: center;
+
+    img {
+        height: 100%;
+    }
+}
+
+.title {
+    margin-top: 3px;
+    color: rgb(36, 40, 43);
+    font-weight: 700;
+}
+
+// Type
+.modal-type {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .actions {
+        margin-top: 12px;
+        margin-bottom: 12px;
+        display: flex;
+    }
+}
+
+.actions {
+    .actions-btn + .actions-btn {
+        margin-left: 0px;
+    }
+}
+
+.actions-btn {
+    font-weight: 600;
+
+    &.disable {
+        background-color: transparent;
+        color: rgb(131, 143, 155);
+    }
+}
+
+// Location
+.modal-location {
+    margin-top: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .modal-location-btn {
+        height: 32px;
+        margin-top: 6px;
+        font-weight: 400;
+        color: rgb(51, 51, 51);
+        font-size: 1.2rem;
+        fill: #333333;
+        padding: 6px 16px;
+        background-color: rgba(151, 151, 151, 0.4);
+        line-height: 18px;
+
+        &:hover {
+            background-color: var(--primary-color);
+            color: var(--white);
+            fill: var(--white);
+        }
+    }
+}
+
+// Selection
+.modal-infor {
+    width: 100%;
+}
+
+.infor-selection {
+    margin-top: 10px;
+}
+
+// select button
+.modal-select-btn {
+    margin-top: 10px;
+    width: 100%;
+    font-weight: 700;
+
+    &.disable {
+        color: rgba(0, 0, 0, 0.26);
+        background-color: rgba(0, 0, 0, 0.12);
+        pointer-events: none;
+    }
+}

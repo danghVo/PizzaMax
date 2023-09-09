@@ -1,0 +1,182 @@
+.user-modal {
+    min-height: 363px;
+    width: 400px;
+    padding: 24px;
+}
+
+.title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: rgb(36, 40, 43);
+    padding: 3px 0;
+}
+
+.valid {
+    background-color: rgb(253, 237, 237);
+    border-radius: 50px;
+    height: 48px;
+    padding: 6px 16px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+
+    color: rgb(95, 33, 32);
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.valid-icon {
+    fill: rgb(239, 83, 80);
+    margin-right: 12px;
+}
+
+.content {
+    padding: 10px 0;
+}
+
+.advice {
+    margin-bottom: 6px;
+    color: rgb(36, 40, 43);
+    font-size: 1.4rem;
+    line-height: 24px;
+    margin-top: 10px;
+    width: fit-content;
+    cursor: pointer;
+    display: block;
+}
+
+.input-form {
+    border: 1px solid rgb(36, 40, 43);
+    width: 100%;
+    height: 40px;
+    padding: 16px;
+    font-size: 1.4rem;
+    border-radius: 50px;
+}
+
+.phone-number {
+    height: 40px;
+    display: flex;
+
+    input {
+        width: 100%;
+        height: 100%;
+        padding-left: 9px;
+        border: 1px solid rgb(36, 40, 43);
+        border-left: 0px;
+        border-top-right-radius: 50px;
+        border-bottom-right-radius: 50px;
+
+        font-size: 1.4rem;
+
+        color: rgb(36, 40, 43);
+    }
+}
+
+// Flag
+
+.flag-wrapper {
+    height: 100%;
+    width: 45px;
+    border: 1px solid rgb(202, 202, 202);
+    border-top-left-radius: 50px;
+    border-bottom-left-radius: 50px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    // padding-left: 8px;
+}
+
+.flag {
+    width: 16px;
+    height: 11px;
+}
+
+.select-flag-item {
+    height: 36.5px;
+    border: 0px;
+}
+
+.select-flag-position {
+    position: absolute;
+    top: 40px;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.flag-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 6px 16px;
+
+    &.active {
+        background-color: #0000000a;
+    }
+}
+
+.flag-item-img {
+    width: 16px;
+    height: 11px;
+    margin-right: 8px;
+    pointer-events: none;
+}
+
+.flag-item-name {
+    font-size: 15px;
+    color: #24282b;
+    pointer-events: none;
+}
+
+.flag-item-phone-code {
+    margin-left: 6px;
+    font-size: 15px;
+    color: #6b6b6b;
+    pointer-events: none;
+}
+
+// About
+.about {
+    font-size: 1.2rem;
+    color: #999;
+    margin-top: 10px;
+    line-height: 18px;
+}
+
+.actions-btn {
+    width: 100%;
+    font-weight: 700;
+}
+
+.separate {
+    height: 24px;
+    margin: 12px 0;
+    color: rgb(197, 197, 197);
+    font-size: 1.2rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    span {
+        padding: 0 10px;
+    }
+}
+
+.line {
+    width: 100%;
+    height: 0.8px;
+    background-color: rgba(0, 0, 0, 0.12);
+}
+
+.authen-actions-btn {
+    display: flex;
+}

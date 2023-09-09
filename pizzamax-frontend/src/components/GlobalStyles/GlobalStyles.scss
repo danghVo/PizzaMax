@@ -1,0 +1,57 @@
+@import 'normalize.css';
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+
+    // var
+    --white: white;
+    --text-color: #24282b;
+    --primary-color: rgb(239, 55, 6);
+    --background-color: #f8f9fa;
+}
+
+html {
+    font-size: 62.5%;
+    color: var(--text-color);
+}
+
+body {
+    font-size: 1.6rem;
+    text-rendering: optimizeSpeed;
+    position: relative;
+    background-color: #f8f9fa;
+    font-weight: 400;
+    font-family: 'Poppins', 'Tahoma';
+}
+
+button,
+input {
+    font-family: 'Poppins', 'Tahoma';
+    font-weight: 500;
+    outline: none;
+}
+
+// Scroll
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #e2e1e1;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px #e2e1e1;
+}
+
+body.hide-scroll {
+    // height: 100%;
+    overflow: hidden;
+}
