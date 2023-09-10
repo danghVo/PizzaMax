@@ -1,4 +1,4 @@
-const throwError = require('../Helper/throwError');
+const throwError = require('../utils/throwError');
 const jwt = require('jsonwebtoken');
 
 class AdminController {

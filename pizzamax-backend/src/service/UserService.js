@@ -1,5 +1,5 @@
 const { User } = require('../models');
-const thowError = require('../Helper/throwError');
+const thowError = require('../utils/throwError');
 const Service = require('./Service');
 
 class UserService extends Service {

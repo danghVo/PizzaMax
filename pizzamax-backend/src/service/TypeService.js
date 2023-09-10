@@ -1,6 +1,6 @@
 const { Type, Time } = require('../models');
 const Service = require('./Service');
-const throwError = require('../Helper/throwError');
+const throwError = require('../utils/throwError');
 
 class TypeService extends Service {
     constructor() {

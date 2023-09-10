@@ -1,7 +1,7 @@
 const { Product, Type, Crust, Size, Flavor, ProductCrust, ProductFlavor, ProductSize } = require('../models');
 
 const Service = require('./Service');
-const throwError = require('../Helper/throwError');
+const throwError = require('../utils/throwError');
 
 class ServiceService extends Service {
     constructor() {

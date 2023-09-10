@@ -1,5 +1,5 @@
 const { User } = require('../models');
-const throwError = require('../Helper/throwError');
+const throwError = require('../utils/throwError');
 const Service = require('./Service');
 
 class AuthService extends Service {

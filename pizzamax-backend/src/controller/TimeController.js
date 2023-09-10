@@ -1,4 +1,4 @@
-const throwError = require('../Helper/throwError');
+const throwError = require('../utils/throwError');
 const { TimeService } = require('../service');
 const Controller = require('./Controller');
 

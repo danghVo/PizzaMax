@@ -1,4 +1,4 @@
-const throwError = require('../Helper/throwError');
+const throwError = require('../utils/throwError');
 const { AuthService } = require('../service');
 const jwt = require('jsonwebtoken');
 

@@ -11,7 +11,7 @@ const {
     ProductDrink,
 } = require('../models');
 const Service = require('./Service');
-const throwError = require('../Helper/throwError');
+const throwError = require('../utils/throwError');
 const SectionService = require('./SectionService');
 
 class ProductService extends Service {
