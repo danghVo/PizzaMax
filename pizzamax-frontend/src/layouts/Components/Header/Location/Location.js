@@ -100,7 +100,7 @@ function Location() {
                 handleClick={(e) => setOpenModal(true)}
                 theme="default"
                 icon={<Icons.location />}
-                header={orderTypeStorage == 1 ? 'Deliver to' : 'Pick-up from'}
+                header={orderTypeStorage===1 ? 'Deliver to' : 'Pick-up from'}
             >
                 {locationUI ? <span>{locationUI}</span> : ''}
             </Button>
@@ -117,7 +117,7 @@ function Location() {
                         <div className={modalCs('actions')}>
                             <Button
                                 animation
-                                className={modalCs('actions-btn', { disable: orderType == 2 })}
+                                className={modalCs('actions-btn', { disable: orderType===2 })}
                                 theme="primary"
                                 size="small"
                                 handleClick={handleChooseDelivery}
@@ -127,7 +127,7 @@ function Location() {
 
                             <Button
                                 animation
-                                className={modalCs('actions-btn', { disable: orderType == 1 })}
+                                className={modalCs('actions-btn', { disable: orderType===1 })}
                                 theme="primary"
                                 size="small"
                                 handleClick={handleChoosePickUp}

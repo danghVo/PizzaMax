@@ -15,7 +15,7 @@ function Content() {
 
     const dispatch = useDispatch();
 
-    const productList = useSelector(productListSelector.productList);
+    const productList = useSelector(productListSelector.productList) || [];
 
     useEffect(() => {
         dispatch(fetchProductList());

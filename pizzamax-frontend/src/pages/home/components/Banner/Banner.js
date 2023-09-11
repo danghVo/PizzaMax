@@ -37,12 +37,12 @@ function Banner() {
                             key={index}
                             className={cs(
                                 'banner-item-img',
-                                { 'img-active': bannerShow == index },
-                                { 'img-prev': prev == index },
+                                { 'img-active': bannerShow===index },
+                                { 'img-prev': prev===index },
                             )}
                             variants={imgVariant}
                             init="enter"
-                            animate={index == bannerShow ? 'center' : 'exit'}
+                            animate={index===bannerShow ? 'center' : 'exit'}
                             style={{ '--index': `-${index}` }}
                             transition={{
                                 opacity: { duration: 0.2 },
@@ -57,7 +57,7 @@ function Banner() {
                     <div
                         key={index}
                         data-banner-id={index}
-                        className={cs('banner-btn', { active: index == bannerShow })}
+                        className={cs('banner-btn', { active: index===bannerShow })}
                         onClick={() => handleChangeBanner(index)}
                     ></div>
                 ))}

@@ -73,7 +73,7 @@ function Button({
             let width = buttonRef.current.clientWidth * 2;
             let height = buttonRef.current.clientWidth * 2;
 
-            if (type == 'icon') {
+            if (type==='icon') {
                 x = '50%';
                 y = '50%';
                 width = '100%';
@@ -108,7 +108,7 @@ function Button({
             className={classNames}
         >
             {icon && <span className={cs('icon-content')}>{icon}</span>}
-            {type == 'icon' ? (
+            {type==='icon' ? (
                 ''
             ) : (
                 <span className={cs('content')}>

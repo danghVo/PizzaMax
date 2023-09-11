@@ -17,13 +17,14 @@ const cartSlice = createSlice({
             state.subTotal += product.price * product.quantity;
         },
         removeFromCart(state, action) {
-            state.products = state.products.filter((product) => product.name != action.payload.name);
+            state.products = state.products.filter((product) => product.name !== action.payload.name);
             state.quantity -= action.payload.quantity;
             state.subTotal -= action.payload.quantity * action.payload.price;
         },
+        setPrice(state, action) {},
         increment(state, action) {
             state.products = state.products.map((product) => {
-                if (product.name == action.payload.name) {
+                if (product.name === action.payload.name) {
                     product.quantity++;
                     state.subTotal += product.price;
                 }
@@ -33,11 +34,11 @@ const cartSlice = createSlice({
             state.quantity++;
         },
         decrement(state, action) {
-            if (action.payload.quantity == 1) {
-                state.products = state.products.filter((product) => product.name != action.payload.name);
+            if (action.payload.quantity === 1) {
+                state.products = state.products.filter((product) => product.name !== action.payload.name);
             } else {
                 state.products = state.products.map((product) => {
-                    if (product.name == action.payload.name) {
+                    if (product.name === action.payload.name) {
                         product.quantity--;
                     }
                     return product;
@@ -49,8 +50,13 @@ const cartSlice = createSlice({
         },
         chooseSelection(state, action) {
             state.products.map((product) => {
-                if (product.name == action.payload.name) {
+                if (product.name === action.payload.name) {
                     product.discOptions[action.payload.indexOption] = action.payload.selection;
+                    let price = 0;
+                    product.discOptions.map((item) => {
+                        if (item.price) price += item.price;
+                    });
+                    product.price = price;
                 }
 
                 return product;

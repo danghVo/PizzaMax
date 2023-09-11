@@ -27,10 +27,10 @@ function HomeProduct({ data }) {
 
     const dispatch = useDispatch();
     const cartStore = useSelector(cartSelector.currentProducts);
-    const product = cartStore.find((item) => item.name == data.name) || {};
+    const product = cartStore.find((item) => item.name === data.name) || {};
     const selection =
         product.discOptions ||
-        data.discOptions?.map((item) => ({ title: item.title, nameSelection: '', indexSelection: -1 })) ||
+        data.discOptions?.map((item) => ({ title: item.name, nameSelection: '', indexSelection: -1 })) ||
         [];
 
     useEffect(() => {
@@ -46,7 +46,7 @@ function HomeProduct({ data }) {
     }, [message, mouseIn]);
 
     const handleCloseModal = () => {
-        if (selection.find((item) => item.indexSelection == -1)) {
+        if (selection.find((item) => item.indexSelection === -1)) {
             decreaseQuantity();
         }
         setOpenModal(false);
@@ -56,16 +56,16 @@ function HomeProduct({ data }) {
         if (openModal) {
             if (
                 selection.filter((item, index) => {
-                    if (item.indexSelection == -1) {
+                    if (item.indexSelection === -1) {
                         setWarnings((prev) =>
                             prev.map((warning, warningIndex) =>
-                                warningIndex == index ? (warning.isWarning = true && warning) : warning,
+                                warningIndex === index ? (warning.isWarning = true && warning) : warning,
                             ),
                         );
                         return true;
                     }
                     return false;
-                }).length == 0
+                }).length === 0
             ) {
                 modalRef.current.closeModal();
                 setMessage(true);
@@ -99,7 +99,7 @@ function HomeProduct({ data }) {
     };
 
     const decreaseQuantity = () => {
-        if (product.quantity == 1) {
+        if (product.quantity === 1) {
             if (openModal) setOpenModal(false);
             setOpenCartSection(false);
         }
@@ -127,6 +127,7 @@ function HomeProduct({ data }) {
                 indexOption: selectionIndex,
                 selection: {
                     title,
+                    price: subOption.price,
                     nameSelection: subOption.name,
                     indexSelection: subOptionIndex,
                 },
@@ -185,7 +186,7 @@ function HomeProduct({ data }) {
             <div className={cs('product-wrapper')}>
                 <div className={cs('product-inner')}>
                     <img className={cs('product-img')} src={data.src} alt="" />
-                    {data.saleOff && <div className={cs('product-saleOff')}>{data.saleOff} OFF</div>}
+                    {data.discount && <div className={cs('product-saleOff')}>{data.discount} OFF</div>}
                     <div className={cs('product-infor')}>
                         <div className={cs('product-content')}>
                             <h4 className={cs('product-name')}>{data.name}</h4>
@@ -258,15 +259,26 @@ function HomeProduct({ data }) {
                                                 <div className={cs('disc-item-title')}>{item.name}</div>
                                                 <div
                                                     className={cs('disc-item-status', {
-                                                        selected: selection[index].indexSelection != -1,
+                                                        selected: selection[index].indexSelection !== -1,
                                                     })}
                                                 >
-                                                    {selection[index].indexSelection != -1 ? 'Selected' : 'Required'}
+                                                    {selection[index].indexSelection !== -1 ? 'Selected' : 'Required'}
                                                 </div>
                                             </div>
                                             <div className={cs('disc-item-options')}>
                                                 {item.subOptions.map((subOption, subOptionIndex) => (
-                                                    <div key={subOptionIndex} className={cs('disc-item-selection')}>
+                                                    <div
+                                                        onClick={() =>
+                                                            handelSelectOption(
+                                                                subOption,
+                                                                item.name,
+                                                                index,
+                                                                subOptionIndex,
+                                                            )
+                                                        }
+                                                        key={subOptionIndex}
+                                                        className={cs('disc-item-selection')}
+                                                    >
                                                         <Button
                                                             animation
                                                             type="icon"
@@ -290,18 +302,20 @@ function HomeProduct({ data }) {
                                                                 </AnimatePresence>
                                                             }
                                                             theme="outline"
-                                                            onClick={() =>
-                                                                handelSelectOption(
-                                                                    subOption,
-                                                                    item.name,
-                                                                    index,
-                                                                    subOptionIndex,
-                                                                )
-                                                            }
                                                         />
-                                                        {`${subOption.name} ${
-                                                            subOption.signature ? '(Signatures)' : ''
-                                                        }`}
+                                                        <div className={cs('disc-item-name')}>
+                                                            {`${subOption.name} ${
+                                                                subOption.signature ? '(Signature)' : ''
+                                                            }`}
+                                                        </div>
+                                                        <div className={cs('disc-item-price')}>
+                                                            {subOption.price !== 0
+                                                                ? subOption.price.toLocaleString('vi-VN', {
+                                                                      style: 'currency',
+                                                                      currency: 'VND',
+                                                                  })
+                                                                : ''}
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>

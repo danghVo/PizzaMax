@@ -33,7 +33,7 @@ function Modal({ children, onClose, className, noCloseBtn, initial, animate, tra
     };
 
     const handleCloseModal = (e) => {
-        if (e.target == overlayRef.current) {
+        if (e.target===overlayRef.current) {
             e.stopPropagation();
             closeModal();
         }
