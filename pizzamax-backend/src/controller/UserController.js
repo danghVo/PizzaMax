@@ -24,7 +24,7 @@ class UserController {
         try {
             await UserService.create(req.body);
 
-            return res.send('User was created successfully');
+            return res.status(200).send('User was created successfully');
         } catch (error) {
             return res.send(error?.message || error);
         }
