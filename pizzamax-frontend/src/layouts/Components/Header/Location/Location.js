@@ -44,7 +44,7 @@ const areaOption = [
 
 function Location() {
     const [openModal, setOpenModal] = useState(false);
-    const [orderType, setOrderType] = useState(1);
+    const [orderType, setOrderType] = useState(null);
     const [locationFirst, setLocationFirst] = useState('');
     const [locationSecond, setLocationSecond] = useState('');
 
@@ -59,7 +59,7 @@ function Location() {
     const locationUI = locationSecondStorage + ', ' + locationFirstStorage;
 
     useEffect(() => {
-        if (orderTypeStorage) setOrderType(orderTypeStorage);
+        if (orderTypeStorage) setOrderType(orderTypeStorage || 1);
         if (locationFirstStorage) setLocationFirst(locationFirstStorage);
         if (locationSecondStorage) setLocationSecond(locationSecondStorage);
     }, []);
@@ -93,6 +93,8 @@ function Location() {
         modalRef.current.closeModal();
     };
 
+    // console.log(orderType);
+
     return (
         <>
             <Button
@@ -100,7 +102,7 @@ function Location() {
                 handleClick={(e) => setOpenModal(true)}
                 theme="default"
                 icon={<Icons.location />}
-                header={orderTypeStorage===1 ? 'Deliver to' : 'Pick-up from'}
+                header={orderType === 1 ? 'Deliver to' : 'Pick-up from'}
             >
                 {locationUI ? <span>{locationUI}</span> : ''}
             </Button>
@@ -117,7 +119,7 @@ function Location() {
                         <div className={modalCs('actions')}>
                             <Button
                                 animation
-                                className={modalCs('actions-btn', { disable: orderType===2 })}
+                                className={modalCs('actions-btn', { disable: orderType === 2 })}
                                 theme="primary"
                                 size="small"
                                 handleClick={handleChooseDelivery}
@@ -127,7 +129,7 @@ function Location() {
 
                             <Button
                                 animation
-                                className={modalCs('actions-btn', { disable: orderType===1 })}
+                                className={modalCs('actions-btn', { disable: orderType === 1 })}
                                 theme="primary"
                                 size="small"
                                 handleClick={handleChoosePickUp}
