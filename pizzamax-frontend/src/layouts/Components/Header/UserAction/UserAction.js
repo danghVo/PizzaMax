@@ -6,9 +6,8 @@ import { useState, useRef, useEffect } from 'react';
 import * as Icons from '~/components/Icons';
 import Button from '~/components/Button';
 import Modal from '~/components/Modal';
-import Option from '~/components/Option';
-import * as flagService from '~/services/flagService';
-import { json } from 'react-router';
+import { useDispatch, useSelector } from 'react-redux';
+import { register, userSelector } from '~/store/user';
 
 const headerCs = classNames.bind(headerStyles);
 
@@ -16,17 +15,20 @@ const modalCs = classNames.bind(modalStyles);
 
 function UserAction() {
     const [openModal, setOpenModal] = useState(false);
-    const [phoneText, setPhoneText] = useState('');
+    const [user, setUser] = useState({ phoneNumber: '', name: '', password: '' });
     const [valid, setIsValid] = useState('');
-    const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = useState(false);
 
     const phoneInputRef = useRef();
     const modalRef = useRef();
 
+    const dispatch = useDispatch();
+
     const phoneStorage = window.localStorage.getItem('phoneNumber');
+    const message = useSelector(userSelector.message);
 
     useEffect(() => {
-        if (phoneStorage) setPhoneText(phoneStorage);
+        if (phoneStorage) setUser((prev) => ({ ...prev, phoneNumber: phoneStorage }));
     }, []);
 
     const handleOpenModal = () => {
@@ -37,7 +39,7 @@ function UserAction() {
         setOpenModal(false);
     };
 
-    const handleInput = (e) => {
+    const handleInputPhone = (e) => {
         let textValue = e.target.value.slice(3).trim();
         if (textValue.length > 14) {
             return;
@@ -58,12 +60,12 @@ function UserAction() {
             textValue = ' ' + textValue.join(' ');
         }
 
-        setPhoneText(textValue);
+        setUser((prev) => ({ ...prev, phoneNumber: textValue }));
     };
 
     const handleKeyInput = (e) => {
         if (e.keyCode) {
-            if (window.getSelection().toString() === '+84' + phoneText) {
+            if (window.getSelection().toString() === '+84' + user.phoneNumber) {
                 e.preventDefault();
                 const selection = window.getSelection();
                 selection.removeAllRanges();
@@ -76,15 +78,25 @@ function UserAction() {
     };
 
     const handleLogIn = () => {
-        const phoneCheck = phoneText.split(' ').join('');
+        if (isLogin) {
+            const phoneCheck = user.phoneNumber.split(' ').join('');
 
-        if (phoneCheck.length < 9 || phoneCheck.length > 11) {
-            setIsValid('Mobile Number is invalid');
-            return;
+            if (phoneCheck.length < 9 || phoneCheck.length > 11) {
+                setIsValid('Mobile Number is invalid');
+                return;
+            }
+
+            window.localStorage.setItem('phoneNumber', user.phoneNumber);
+            modalRef.current.closeModal();
+        } else {
+            setIsLogin(true);
         }
+    };
 
-        window.localStorage.setItem('phoneNumber', phoneText);
-        modalRef.current.closeModal();
+    const handleRegister = async () => {
+        if (!isLogin) {
+            dispatch(register(user));
+        } else setIsLogin(false);
     };
 
     const handleAsGuest = () => {
@@ -100,54 +112,54 @@ function UserAction() {
             {openModal && (
                 <Modal ref={modalRef} className={modalCs('user-modal')} onClose={handleCloseModal}>
                     <p className={modalCs('title')}>Enter your information</p>
-                    {valid && (
+                    {(valid || message) && (
                         <p className={modalCs('valid')}>
                             <Icons.valid className={modalCs('valid-icon')} />
-                            {valid}
+                            {valid || message}
                         </p>
                     )}
                     <div className={modalCs('content')}>
                         {!isLogin && (
                             <>
                                 <label htmlFor="nickname" className={modalCs('advice')}>
-                                    What can we call you ?
+                                    What can we should call you ?
                                 </label>
-                                <input id="nickname" className={modalCs('input-form')} name="" />
+                                <input
+                                    id="nickname"
+                                    className={modalCs('input-form')}
+                                    name=""
+                                    value={user.name}
+                                    onChange={(e) => setUser((prev) => ({ ...prev, name: e.target.value }))}
+                                />
                             </>
                         )}
-                        <label htmlFor="username" className={modalCs('advice')}>
-                            Username:
+                        <label htmlFor="phone-number" className={modalCs('advice')}>
+                            Please enter your mobile number
                         </label>
-                        <input id="username" className={modalCs('input-form')} name="" />
+                        <div className={modalCs('phone-number')}>
+                            <div className={modalCs('flag-wrapper')}>
+                                <img className={modalCs('flag')} src="https://flagcdn.com/w320/vn.png" alt="Viet Nam" />
+                            </div>
+
+                            <input
+                                id="phone-number"
+                                ref={phoneInputRef}
+                                value={'+84' + user.phoneNumber}
+                                onKeyDown={handleKeyInput}
+                                onChange={handleInputPhone}
+                            />
+                        </div>
+
                         <label htmlFor="password" className={modalCs('advice')}>
                             Password:
                         </label>
-                        <input id="password" type="password" className={modalCs('input-form')} name="" />
-
-                        {!isLogin && (
-                            <>
-                                <label htmlFor="phone-number" className={modalCs('advice')}>
-                                    Please confirm your country code and enter your mobile number
-                                </label>
-                                <div className={modalCs('phone-number')}>
-                                    <div className={modalCs('flag-wrapper')}>
-                                        <img
-                                            className={modalCs('flag')}
-                                            src="https://flagcdn.com/w320/vn.png"
-                                            alt="Viet Nam"
-                                        />
-                                    </div>
-
-                                    <input
-                                        id="phone-number"
-                                        ref={phoneInputRef}
-                                        value={'+84' + phoneText}
-                                        onKeyDown={handleKeyInput}
-                                        onChange={handleInput}
-                                    />
-                                </div>
-                            </>
-                        )}
+                        <input
+                            id="password"
+                            type="password"
+                            className={modalCs('input-form')}
+                            value={user.password}
+                            onChange={(e) => setUser((prev) => ({ ...prev, password: e.target.value }))}
+                        />
 
                         <p className={modalCs('about')}>
                             This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service
@@ -159,10 +171,10 @@ function UserAction() {
                         <div className={modalCs('authen-actions-btn')}>
                             <Button
                                 animation
-                                handleClick={handleLogIn}
+                                handleClick={handleRegister}
                                 className={modalCs('actions-btn', 'log-in-btn')}
                                 hover
-                                theme="primary"
+                                theme={!isLogin ? 'primary' : 'default'}
                                 size="small"
                             >
                                 Register
@@ -173,7 +185,7 @@ function UserAction() {
                                 handleClick={handleLogIn}
                                 className={modalCs('actions-btn', 'log-in-btn')}
                                 hover
-                                theme="primary"
+                                theme={isLogin ? 'primary' : 'default'}
                                 size="small"
                             >
                                 Login

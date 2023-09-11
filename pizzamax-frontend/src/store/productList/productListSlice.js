@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-import images from '~/assets/images';
 import { productService } from '~/services';
 
 const productListSlice = createSlice({
@@ -31,7 +30,6 @@ const productListSlice = createSlice({
             .addCase(fetchProductList.fulfilled, (state, action) => {
                 state.productList = action.payload;
                 state.productShow = action.payload;
-                console.log(state.productList);
             });
     },
 });

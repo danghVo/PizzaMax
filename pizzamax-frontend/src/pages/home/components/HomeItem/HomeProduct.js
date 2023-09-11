@@ -197,10 +197,12 @@ function HomeProduct({ data }) {
                     </div>
 
                     <div className={cs('product-price')}>
-                        {data.price.toLocaleString('vi-VN', {
-                            style: 'currency',
-                            currency: 'VND',
-                        })}
+                        {data.price
+                            ? data.price.toLocaleString('vi-VN', {
+                                  style: 'currency',
+                                  currency: 'VND',
+                              })
+                            : 'Choose to see detail price'}
                     </div>
 
                     {openCartSection && product.quantity ? (
