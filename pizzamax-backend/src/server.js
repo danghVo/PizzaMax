@@ -2,13 +2,27 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const { sequelize } = require('./models');
+
 const routers = require('./router');
+const authRouters = require('./router/authRouter');
+const adminRouters = require('./router/adminRouter');
+const authenticate = require('./validation/authenticate')
 
 app.use(cors({ origin: true }));
 app.use(express.json());
 
+app.all(/\/api\/.*/, authenticate)
+
 Object.values(routers).forEach((router) => {
     app.use('/api', router);
+});
+
+Object.values(adminRouters).forEach((router) => {
+    app.use('/api/admin', router);
+});
+
+Object.values(authRouters).forEach((router) => {
+    app.use('/api/auth', router);
 });
 
 app.listen({ port: 4000 }, async () => {

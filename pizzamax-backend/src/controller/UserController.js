@@ -1,10 +1,9 @@
 const throwError = require('../utils/throwError');
 const { UserService } = require('../service');
-const jwt = require('jsonwebtoken');
 
 class UserController {
     constructor() {
-        this.name = 'UserController';
+        this.controllerName = 'UserController';
     }
 
     async login(req, res, next) {
@@ -16,28 +15,6 @@ class UserController {
             } else {
                 throwError(401, 'wrong password');
             }
-        } catch (error) {
-            return res.send(error?.message || error);
-        }
-    }
-
-    async authenticate(req, res, next) {
-        try {
-            const path = req.url.split('/')[2];
-            if (path == 'register') next();
-
-            const token = req.headers['authorization']?.split(' ')[1] || throwError(401, 'Missing token');
-
-            const isValid = jwt.verify(
-                token,
-                req.body.phoneNumber == '0000000000' ? process.env.ADMIN_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET,
-            );
-
-            if (isValid) {
-                next();
-            }
-
-            throwError(403, 'Dont have right to access');
         } catch (error) {
             return res.send(error?.message || error);
         }

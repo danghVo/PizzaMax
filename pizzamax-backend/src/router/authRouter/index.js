@@ -5,7 +5,6 @@ const routers = {};
 fs.readdirSync(__dirname)
     .filter((file) => file != 'index.js' && file.indexOf('.') !== -1)
     .forEach((file) => {
-
         const route = require(path.join(__dirname, file));
 
         routers[route.name] = route.router;

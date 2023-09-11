@@ -2,7 +2,7 @@ const { User } = require('../models');
 const throwError = require('../utils/throwError');
 const Service = require('./Service');
 
-class AuthService extends Service {
+class AuthService extends Service { 
     constructor() {
         super('AuthService');
     }

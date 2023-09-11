@@ -33,13 +33,40 @@ module.exports = (sequelize, DataTypes) => {
         toJSON() {
             const product = this.get();
 
+            const sections = [
+                ...product.Sizes.map((item) => item.dataValues.ProductSize.dataValues.section),
+                ...product.Crusts.map((item) => item.dataValues.ProductCrust.dataValues.section),
+                ...product.Flavors.map((item) => item.dataValues.ProductFlavor.dataValues.section),
+                ...product.Drinks.map((item) => item.dataValues.ProductDrink.dataValues.section),
+            ].reduce((accu, curr) => (accu.includes(curr) ? [...accu] : [...accu, curr]), []);
+
+            const discOptions = sections.map((section) => {
+                return {
+                    name: section,
+                    subOptions: [
+                        ...product.Sizes.filter((item) => item.dataValues.ProductSize.dataValues.section === section),
+                        ...product.Flavors.filter(
+                            (item) => item.dataValues.ProductFlavor.dataValues.section === section,
+                        ),
+                        ...product.Crusts.filter((item) => item.dataValues.ProductCrust.dataValues.section === section),
+                        ...product.Drinks.filter((item) => item.dataValues.ProductDrink.dataValues.section === section),
+                    ],
+                };
+            });
+
             return {
                 ...product,
                 id: undefined,
                 DiscountId: undefined,
                 TypeId: undefined,
                 typeId: undefined,
-                Type: product.Type.name,
+                Type: undefined,
+                Sizes: undefined,
+                Flavors: undefined,
+                Crusts: undefined,
+                type: product.Type.name,
+                discount: product.Discount || undefined,
+                discOptions,
             };
         }
     }

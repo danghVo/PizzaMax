@@ -11,8 +11,9 @@ class ProductController extends Controller {
         try {
             const productList = await ProductService.getAllProduct();
 
-            if (productList) return res.json(productList);
-            else throwError(404, 'Nothing to show');
+            if (productList) {
+                return res.json(productList);
+            } else throwError(404, 'Nothing to show');
         } catch (error) {
             return res.send(error?.message || error);
         }

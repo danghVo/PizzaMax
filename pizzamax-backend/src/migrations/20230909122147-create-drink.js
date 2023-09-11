@@ -18,7 +18,7 @@ module.exports = {
                 allowNull: false,
             },
             signature: {
-                type: Sequelize.STRING,
+                type: Sequelize.BOOLEAN,
                 allowNull: false,
             },
             createdAt: {

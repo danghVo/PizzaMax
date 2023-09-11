@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 class AuthController {
     constructor() {
-        this.name = 'AuthController';
+        this.controllerName = 'AuthController';
     }
 
     async login(req, res, next) {
