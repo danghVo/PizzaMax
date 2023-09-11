@@ -1,5 +1,5 @@
 const { User } = require('../models');
-const thowError = require('../utils/throwError');
+const throwError = require('../utils/throwError');
 const Service = require('./Service');
 
 class UserService extends Service {
@@ -10,12 +10,12 @@ class UserService extends Service {
     form(payload) {
         const user = {
             name: payload.name,
-            password: payload.password,
             phoneNumber: payload.phoneNumber,
+            password: payload.password,
         };
 
         Object.keys(user).forEach((key) => {
-            user[key] || thowError(400, `missing ${key}`);
+            user[key] || throwError(400, `Missing ${key}`);
         });
 
         return user;
@@ -50,13 +50,12 @@ class UserService extends Service {
     }
 
     async create(payload) {
-        const user = await this.find({ phoneNumber: payload.phoneNumber });
+        const newUser = this.form(payload);
+        const user = await this.find(User, { phoneNumber: payload.phoneNumber });
 
         if (user) {
             return throwError(409, 'Phone number have already existed');
         }
-
-        const newUser = this.userForm(payload);
 
         await User.create(newUser);
     }
