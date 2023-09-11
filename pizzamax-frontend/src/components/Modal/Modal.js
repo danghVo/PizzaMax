@@ -33,7 +33,7 @@ function Modal({ children, onClose, className, noCloseBtn, initial, animate, tra
     };
 
     const handleCloseModal = (e) => {
-        if (e.target===overlayRef.current) {
+        if (e.target === overlayRef.current) {
             e.stopPropagation();
             closeModal();
         }
@@ -45,7 +45,7 @@ function Modal({ children, onClose, className, noCloseBtn, initial, animate, tra
     };
 
     return ReactDOM.createPortal(
-        <div className={cs('overlay')} ref={overlayRef} onClick={handleCloseModal}>
+        <div className={cs('overlay')} ref={overlayRef} onMouseDown={handleCloseModal}>
             <motion.div className={wrapperClass} {...animation}>
                 {!noCloseBtn && (
                     <span ref={closeBtnRef} className={cs('close')} onClick={closeModal}>
