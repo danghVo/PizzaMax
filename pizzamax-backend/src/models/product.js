@@ -15,6 +15,8 @@ module.exports = (sequelize, DataTypes) => {
             Flavor,
             Size,
             Drink,
+            Cart,
+            Detail,
             ProductCrust,
             ProductSize,
             ProductFlavor,
@@ -28,6 +30,7 @@ module.exports = (sequelize, DataTypes) => {
             this.belongsToMany(Size, { through: ProductSize, foreignKey: 'productId' });
             this.belongsToMany(Flavor, { through: ProductFlavor, foreignKey: 'productId' });
             this.belongsToMany(Drink, { through: ProductDrink, foreignKey: 'productId' });
+            this.belongsToMany(Cart, { through: Detail, foreignKey: 'productId' });
         }
 
         toJSON() {
