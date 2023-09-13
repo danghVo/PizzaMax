@@ -7,8 +7,9 @@ module.exports = (sequelize, DataTypes) => {
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        static associate(models) {
-            // define association here
+        static associate({ Cart, City, Address }) {
+            this.belongsToMany(City, { through: Address, foreignKey: 'userId' });
+            this.hasMany(Cart, { foreignKey: 'userId' });
         }
 
         toJSON() {
@@ -28,38 +29,27 @@ module.exports = (sequelize, DataTypes) => {
             name: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                get() {
-                    const name = this.getDataValue('name');
-
-                    return name || null;
-                },
             },
             phoneNumber: {
                 type: DataTypes.STRING,
                 allowNull: false,
-
-                get() {
-                    const phoneNumber = this.getDataValue('phone_number');
-
-                    return phoneNumber || null;
-                },
             },
             password: {
                 type: DataTypes.STRING,
                 allowNull: false,
-
-                get() {
-                    const password = this.getDataValue('password');
-
-                    return password || null;
-                },
             },
             token: {
                 type: DataTypes.STRING,
-
-                set(value) {
-                    this.setDataValue('token', value);
-                },
+            },
+            role: {
+                type: DataTypes.STRING,
+                defaultValue: 'user',
+                allowNull: false,
+            },
+            avatar: {
+                type: DataTypes.STRING,
+                defaultValue: 'noImage',
+                allowNull: false,
             },
         },
         {

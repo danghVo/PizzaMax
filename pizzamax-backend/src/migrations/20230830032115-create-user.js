@@ -25,6 +25,14 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
+            role: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            image: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
             token: {
                 type: Sequelize.STRING,
             },
