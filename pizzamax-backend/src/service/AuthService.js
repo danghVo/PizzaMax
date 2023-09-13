@@ -2,23 +2,23 @@ const { User } = require('../models');
 const throwError = require('../utils/throwError');
 const Service = require('./Service');
 
-class AuthService extends Service { 
+class AuthService extends Service {
     constructor() {
         super('AuthService');
     }
 
     async validUser(payload) {
-        const user = await this.find({ phoneNumber: payload.phoneNumber });
+        const user = await this.find(User, { phoneNumber: payload.phoneNumber });
 
         if (!user) {
             return throwError(404, 'Not found phone number');
         }
 
-        if (user.password != payload.password) {
+        if (user.dataValues.password !== payload.password) {
             return false;
         }
 
-        return true;
+        return user;
     }
 
     async setToken(user, token) {
