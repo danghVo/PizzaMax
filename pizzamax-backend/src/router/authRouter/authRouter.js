@@ -1,9 +1,9 @@
 const router = require('express').Router();
 const { AuthController } = require('../../controller');
 
-router.get('/login', [AuthController.login, AuthController.createToken]);
+router.post('/login', [AuthController.login, AuthController.createToken]);
 
-router.get('/token', AuthController.refreshToken);
+router.post('/token', AuthController.refreshToken);
 
 router.post('/logout', AuthController.deleteToken);
 
