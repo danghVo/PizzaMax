@@ -1,6 +1,8 @@
 const throwError = require('../utils/throwError');
 const { AuthService } = require('../service');
 const jwt = require('jsonwebtoken');
+const generateToken = require('../utils/generateToken');
+require('dotenv').config();
 
 class AuthController {
     constructor() {
@@ -9,9 +11,10 @@ class AuthController {
 
     async login(req, res, next) {
         try {
-            const isUserValid = await AuthService.validUser(req.body);
+            const userValid = await AuthService.validUser(req.body);
 
-            if (isUserValid) {
+            if (userValid) {
+                res.locals.user = userValid.dataValues;
                 next();
             } else {
                 throwError(401, 'wrong password');
@@ -25,15 +28,21 @@ class AuthController {
         try {
             const user = { phoneNumber: req.body.phoneNumber, password: req.body.password };
             const accessToken = generateToken(
-                phoneNumber,
+                user,
                 user.phoneNumber == '0000000000' ? process.env.ADMIN_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET,
             );
 
-            const refreshToken = generateToken(user, process.env.REFRESH_TOKEN_SECRET, null);
+            const refreshToken = generateToken(user, process.env.REFRESH_TOKEN_SECRET, '');
 
             await AuthService.setToken(user, { token: refreshToken });
 
-            return res.json({ accessToken, refreshToken, isAdmin: user.phoneNumber == '0000000000' && true });
+            return res.json({
+                accessToken,
+                refreshToken,
+                isAdmin: user.phoneNumber == '0000000000' && true,
+                ...res.locals.user,
+                password: undefined,
+            });
         } catch (error) {
             return res.send(error?.message || error);
         }
