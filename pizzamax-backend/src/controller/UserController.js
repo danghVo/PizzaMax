@@ -8,9 +8,9 @@ class UserController {
 
     async login(req, res, next) {
         try {
-            const isUserValid = await UserService.validUser(req.body);
+            const userValid = await UserService.validUser(req.body);
 
-            if (isUserValid) {
+            if (userValid) {
                 next();
             } else {
                 throwError(401, 'wrong password');
