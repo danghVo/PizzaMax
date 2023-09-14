@@ -1,4 +1,4 @@
-const { User } = require('../models');
+const { User, Cart } = require('../models');
 const throwError = require('../utils/throwError');
 const Service = require('./Service');
 
@@ -57,26 +57,37 @@ class UserService extends Service {
             return throwError(409, 'Phone number have already existed');
         }
 
-        await User.create(newUser);
+        await User.create({ ...newUser, Cart: {} }, { include: [Cart] });
     }
 
-    async changePassword(payload) {
-        await this.update(
-            {
-                phoneNumber: payload.phoneNumber,
-                password: payload.password,
-            },
-            { password: payload.newPassword },
-        );
+    async updateUser(uuid, payload) {
+        const isExist = await this.find(User, { uuid });
+
+        if (isExist)
+            await this.update(
+                User,
+                {
+                    uuid: uuid,
+                },
+                payload,
+            );
+        else throwError(404, 'User doesnt exist');
     }
 
-    async changeName(payload) {
-        await this.update(
-            {
-                phoneNumber: payload.phoneNumber,
-            },
-            { name: payload.newName },
-        );
+    async changePassword(uuid, payload) {
+        const userExist = await this.find(User, { uuid });
+
+        if (userExist)
+            if (userExist.dataValues.password === payload.password)
+                await this.update(
+                    User,
+                    {
+                        password: payload.password,
+                    },
+                    { password: payload.newPassword },
+                );
+            else throwError(400, 'Wrong old password');
+        else throwError(404, 'User doesnt exist');
     }
 }
 

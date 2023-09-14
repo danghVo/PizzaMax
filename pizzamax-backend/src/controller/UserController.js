@@ -1,9 +1,10 @@
 const throwError = require('../utils/throwError');
 const { UserService } = require('../service');
+const Controller = require('./Controller');
 
-class UserController {
+class UserController extends Controller {
     constructor() {
-        this.controllerName = 'UserController';
+        super('UserController');
     }
 
     async login(req, res, next) {
@@ -30,21 +31,31 @@ class UserController {
         }
     }
 
-    async changePassword(req, res) {
+    async updateUser(req, res, next) {
         try {
-            await UserService.changePassword(req.body);
+            const payload = req.body;
+            const uuid = req.params.uuid;
 
-            res.status(200).send('Change password success fully');
+            if (payload) {
+                delete payload.phoneNumber;
+                delete payload.password;
+            }
+
+            await UserService.updateUser(uuid, payload);
+
+            res.status(200).send('Update successfully');
         } catch (error) {
             return res.send(error?.message || error);
         }
     }
 
-    async changeName(req, res) {
+    async changePassword(req, res) {
         try {
-            await UserService.changeName(req.body);
+            const uuid = req.params.uuid;
 
-            res.status(200).send('Change name successfully');
+            await UserService.changePassword(uuid, req.body);
+
+            res.status(200).send('Change password successfully');
         } catch (error) {
             return res.send(error?.message || error);
         }

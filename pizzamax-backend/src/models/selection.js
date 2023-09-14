@@ -1,5 +1,5 @@
 'use strict';
-const { Model } = require('sequelize');
+const { Model, UUIDV4 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class Selection extends Model {
         /**
@@ -7,18 +7,20 @@ module.exports = (sequelize, DataTypes) => {
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        static associate(models) {
-            // define association here
+        static associate({ Detail }) {
+            this.belongsTo(Detail, { foreignKey: 'detailId' });
         }
     }
     Selection.init(
         {
-            name: {
-                type: DataTypes.STRING,
+            uuid: {
+                type: DataTypes.UUID,
                 allowNull: false,
+                defaultValue: DataTypes.UUIDV4,
+                primaryKey: true,
             },
-            price: {
-                type: DataTypes.STRING,
+            selectId: {
+                type: DataTypes.INTEGER,
                 allowNull: false,
             },
         },

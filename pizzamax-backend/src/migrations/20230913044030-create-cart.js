@@ -30,6 +30,18 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
+            checkOutAt: {
+                type: Sequelize.DATE,
+            },
+            statusId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: 'Statuses',
+                    key: 'id',
+                    as: 'statusId',
+                },
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
