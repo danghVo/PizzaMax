@@ -1,10 +1,11 @@
 const { Type, Time } = require('../models');
+const TimeService = require('./TimeService');
 const Service = require('./Service');
 const throwError = require('../utils/throwError');
 
 class TypeService extends Service {
     constructor() {
-        super('TypeService');
+        super('TypeService', Type);
     }
 
     form(payload, mustFull = true) {
@@ -20,12 +21,12 @@ class TypeService extends Service {
     }
 
     async getAllType() {
-        return await this.getAll(Type, 'Time');
+        return await this.getAll(Time);
     }
 
     async createType({ timeId, ...payload }) {
         if (timeId) {
-            const isTimeExist = await this.find(Time, { id: timeId });
+            const isTimeExist = await TimeService.find({ id: timeId });
 
             if (!isTimeExist) {
                 throwError(404, 'Time with id does not exist');
@@ -33,16 +34,16 @@ class TypeService extends Service {
         }
 
         const type = this.form(payload);
-        const isExist = await this.find(Type, type);
+        const isExist = await this.find(type);
 
         if (isExist) {
             throwError(409, 'Type has already existed');
-        } else return await Type.create({ ...type, timeId: timeId && 2 });
+        } else return await this.model.create({ ...type, timeId: timeId && 2 });
     }
 
     async updateType(typeId, { timeId, ...payload }) {
         if (timeId) {
-            const isTimeExist = await this.find(Time, { id: timeId });
+            const isTimeExist = await TimeService.find({ id: timeId });
 
             if (!isTimeExist) {
                 throwError(404, 'Time with id does not exist');
@@ -55,17 +56,17 @@ class TypeService extends Service {
             throwError(400, 'Updated value wasnt provided');
         }
 
-        const isExist = await this.find(Type, typeId);
+        const isExist = await this.find(typeId);
 
         if (isExist) {
-            await this.update(Type, typeId, Object.assign(type, timeId && { timeId }));
+            await this.update(typeId, Object.assign(type, timeId && { timeId }));
         } else throwError(500, 'Update fail');
     }
 
     async deleteType(typeId) {
-        const isExist = await this.find(Type, typeId);
+        const isExist = await this.find(typeId);
 
-        if (isExist) return await this.delete(Type, typeId);
+        if (isExist) return await this.delete(typeId);
         else throwError(404, 'Type doesnt exist');
     }
 }

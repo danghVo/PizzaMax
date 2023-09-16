@@ -4,7 +4,7 @@ const throwError = require('../utils/throwError');
 
 class TimeService extends Service {
     constructor() {
-        super('TimeService');
+        super('TimeService', Time);
     }
 
     form(payload, mustFull = true) {
@@ -23,31 +23,31 @@ class TimeService extends Service {
     }
 
     async getAllTime() {
-        return await this.getAll(Time);
+        return await this.getAll();
     }
 
     async createTime(payload) {
         const time = this.form(payload);
-        const isExist = await this.find(Time, time);
+        const isExist = await this.find(time);
 
         if (isExist) {
             throwError(409, 'Time has already existed');
-        } else return await Time.create(time);
+        } else return await this.model.create(time);
     }
 
     async updateTime(timeId, payload) {
         const time = this.form(payload, false);
-        const isExist = await this.find(Time, timeId);
+        const isExist = await this.find(timeId);
 
         if (isExist) {
-            await this.update(Time, timeId, time);
+            await this.update(timeId, time);
         } else throwError(500, 'Update fail');
     }
 
     async deleteTime(timeId) {
-        const isExist = await this.find(Time, timeId);
+        const isExist = await this.find(timeId);
 
-        if (isExist) return await this.delete(Time, timeId);
+        if (isExist) return await this.delete(timeId);
         else throwError(404, 'Time doesnt exist');
     }
 }

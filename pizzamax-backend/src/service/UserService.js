@@ -1,10 +1,11 @@
 const { User, Cart } = require('../models');
+const CartService = require('./CartService');
 const throwError = require('../utils/throwError');
 const Service = require('./Service');
 
 class UserService extends Service {
     constructor() {
-        super('UserService');
+        super('UserService', User);
     }
 
     form(payload) {
@@ -51,21 +52,20 @@ class UserService extends Service {
 
     async create(payload) {
         const newUser = this.form(payload);
-        const user = await this.find(User, { phoneNumber: payload.phoneNumber });
+        const user = await this.find({ phoneNumber: payload.phoneNumber });
 
         if (user) {
             return throwError(409, 'Phone number have already existed');
         }
 
-        await User.create({ ...newUser, Cart: {} }, { include: [Cart] });
+        await this.model.create({ ...newUser, Carts: {} }, { include: [Cart] });
     }
 
     async updateUser(uuid, payload) {
-        const isExist = await this.find(User, { uuid });
+        const isExist = await this.find({ uuid });
 
         if (isExist)
             await this.update(
-                User,
                 {
                     uuid: uuid,
                 },
@@ -75,12 +75,11 @@ class UserService extends Service {
     }
 
     async changePassword(uuid, payload) {
-        const userExist = await this.find(User, { uuid });
+        const userExist = await this.find({ uuid });
 
         if (userExist)
             if (userExist.dataValues.password === payload.password)
                 await this.update(
-                    User,
                     {
                         password: payload.password,
                     },
