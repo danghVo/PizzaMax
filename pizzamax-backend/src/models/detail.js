@@ -15,15 +15,26 @@ module.exports = (sequelize, DataTypes) => {
                     type: DataTypes.UUID,
                 },
             });
-            this.hasMany(Selection);
+
+            this.hasMany(Selection, {
+                foreignKey: {
+                    name: 'detailId',
+                    type: DataTypes.UUID,
+                },
+            });
         }
     }
     Detail.init(
         {
             uuid: {
                 type: DataTypes.UUID,
+                allowNull: false,
                 defaultValue: DataTypes.UUIDV4,
                 primaryKey: true,
+
+                get() {
+                    return this.getDataValue('uuid');
+                },
             },
             quantity: {
                 type: DataTypes.INTEGER,
