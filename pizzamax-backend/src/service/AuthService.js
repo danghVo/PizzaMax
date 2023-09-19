@@ -2,6 +2,7 @@ const { User, Cart, Status, Detail, Product, Type, Size, Drink, Flavor, Crust, S
 const throwError = require('../utils/throwError');
 const Service = require('./Service');
 const UserService = require('./UserService');
+const CartService = require('./CartService');
 
 class AuthService extends Service {
     constructor() {
@@ -14,28 +15,15 @@ class AuthService extends Service {
             return throwError(404, 'Not found phone number');
         }
 
-        const carts = await user.getCarts({
-            include: [
-                Status,
-                {
-                    model: Product,
-                    include: [Type, Size, Drink, Flavor, Crust],
-                    through: {
-                        model: Detail,
-                        include: [Selection],
-                    },
-                },
-            ],
-        });
+        let carts = await CartService.getCartOfUser(user.dataValues.id);
+
         if (user.dataValues.password !== payload.password) {
             return false;
         }
 
         return {
             ...user.toJSON(),
-            carts: carts.map((cart, index) => {
-                return cart.toJSON();
-            }),
+            carts,
         };
     }
 

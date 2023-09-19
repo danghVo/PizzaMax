@@ -14,12 +14,13 @@ class AuthController {
             const userValid = await AuthService.validUser(req.body);
 
             if (userValid) {
-                res.locals.user = userValid.dataValues;
+                res.locals.user = userValid;
                 next();
             } else {
                 throwError(401, 'wrong password');
             }
         } catch (error) {
+            console.log(error);
             return res.send(error?.message || error);
         }
     }
@@ -44,6 +45,7 @@ class AuthController {
                 password: undefined,
             });
         } catch (error) {
+            console.log(error);
             return res.send(error?.message || error);
         }
     }
