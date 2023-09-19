@@ -16,7 +16,20 @@ module.exports = (sequelize, DataTypes) => {
                     type: DataTypes.UUID,
                 },
             });
-            this.belongsTo(Status, { foreignKey: 'statusId' });
+            this.belongsTo(Status, { foreignKey: { name: 'statusId' } });
+        }
+
+        toJSON() {
+            const cart = this.get();
+            return {
+                ...cart,
+                userId: undefined,
+                UserId: undefined,
+                statusId: undefined,
+                StatusId: undefined,
+                Status: undefined,
+                status: cart.Status.name,
+            };
         }
     }
     Cart.init(
@@ -51,8 +64,6 @@ module.exports = (sequelize, DataTypes) => {
             modelName: 'Cart',
         },
     );
-
-    // Cart.removeAttribute('id');
 
     return Cart;
 };
