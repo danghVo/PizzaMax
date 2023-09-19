@@ -17,8 +17,20 @@ module.exports = {
                     as: 'detailId',
                 },
             },
-            selectId: {
-                type: Sequelize.INTEGER,
+            selectionName: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            selectionPrice: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            selectionType: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            section: {
+                type: Sequelize.STRING,
                 allowNull: false,
             },
             createdAt: {

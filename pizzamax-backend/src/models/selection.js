@@ -1,5 +1,5 @@
 'use strict';
-const { Model, UUIDV4 } = require('sequelize');
+const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class Selection extends Model {
         /**
@@ -8,7 +8,22 @@ module.exports = (sequelize, DataTypes) => {
          * The `models/index` file will call this method automatically.
          */
         static associate({ Detail }) {
-            this.belongsTo(Detail, { foreignKey: 'detailId' });
+            this.belongsTo(Detail, {
+                foreignKey: {
+                    name: 'detailId',
+                    type: DataTypes.UUID,
+                },
+            });
+        }
+
+        toJSON() {
+            const selection = this.get();
+
+            return {
+                ...selection,
+                detailId: undefined,
+                uuid: undefined,
+            };
         }
     }
     Selection.init(
@@ -19,8 +34,21 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: DataTypes.UUIDV4,
                 primaryKey: true,
             },
-            selectId: {
-                type: DataTypes.INTEGER,
+            selectionName: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            selectionType: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            selectionPrice: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                defaultValue: '0',
+            },
+            section: {
+                type: DataTypes.STRING,
                 allowNull: false,
             },
         },
