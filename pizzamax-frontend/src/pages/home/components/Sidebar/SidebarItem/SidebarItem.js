@@ -1,5 +1,5 @@
 import classNames from 'classnames/bind';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import styles from '../Sidebar.module.scss';
@@ -7,8 +7,19 @@ import * as Icons from '~/components/Icons';
 
 const cs = classNames.bind(styles);
 
-function SideBarItem({ data, chosing, id, onClick }) {
+function SideBarItem({ data, chosing, id, onClick, setChosing }) {
     const [hover, setHover] = useState();
+
+    useEffect(() => {
+        const productsOfType = document.getElementById(data);
+        const titleOfType = productsOfType.getElementsByTagName('h3')[0];
+        window.addEventListener('scroll', () => {
+            const distanceTopOfTitle = titleOfType.getBoundingClientRect().top;
+            if (distanceTopOfTitle < 190 && distanceTopOfTitle > 0) {
+                setChosing(id);
+            }
+        });
+    }, []);
 
     const hoverVariant = {
         init: {
@@ -26,29 +37,29 @@ function SideBarItem({ data, chosing, id, onClick }) {
 
     return (
         <motion.div
-            whileHover={hover && chosing!==id ? { padding: '6px 24px' } : {}}
+            whileHover={hover && chosing !== id ? { padding: '6px 24px' } : {}}
             transition={{ duration: 0.2 }}
             initial={{ padding: '6px 0px' }}
-            animate={chosing===id ? { padding: '10px 24px' } : { padding: '6px 0px' }}
+            animate={chosing === id ? { padding: '10px 24px' } : { padding: '6px 0px' }}
             onClick={onClick}
             key={id}
             onHoverStart={() => setHover(true)}
             onHoverEnd={() => setHover(false)}
-            className={cs('categories-item', { choose: chosing===id })}
+            className={cs('categories-item', { choose: chosing === id })}
         >
             <AnimatePresence>
-                {((hover && chosing!==id) || chosing===id) && (
+                {((hover && chosing !== id) || chosing === id) && (
                     <motion.div
                         variants={hoverVariant}
                         initial="init"
-                        animate={chosing===id || hover ? 'animate' : ''}
+                        animate={chosing === id || hover ? 'animate' : ''}
                         exit="exit"
-                        className={cs('animation', { active: chosing===id })}
+                        className={cs('animation', { active: chosing === id })}
                     ></motion.div>
                 )}
             </AnimatePresence>
             <div className={cs('content')}>{data}</div>
-            {chosing===id && <Icons.arrowRight className={cs('categories-icon')} />}
+            {chosing === id && <Icons.arrowRight className={cs('categories-icon')} />}
         </motion.div>
     );
 }

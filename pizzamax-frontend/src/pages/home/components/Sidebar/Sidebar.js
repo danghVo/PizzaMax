@@ -43,10 +43,11 @@ function Sidebar({ categories }) {
 
     const handleChooseCategorie = (item, index) => {
         setChosing(index);
-        const element = document.getElementById(item);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            window.scrollTo(0, window.scrollY - 25);
+        const productsOfType = document.getElementById(item);
+        if (productsOfType) {
+            const titleElement = productsOfType.getElementsByTagName('h3')[0];
+            titleElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            window.scrollTo(0, window.scrollY + 175);
         }
     };
 
@@ -61,6 +62,7 @@ function Sidebar({ categories }) {
                     {categories.map((item, index) => (
                         <SideBarItem
                             id={index}
+                            setChosing={setChosing}
                             key={index}
                             data={item}
                             onClick={() => handleChooseCategorie(item, index)}
