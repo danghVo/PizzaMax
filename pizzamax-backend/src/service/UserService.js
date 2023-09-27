@@ -1,7 +1,7 @@
-const { User, Cart } = require('../models');
-const CartService = require('./CartService');
+const { User, Cart, City, Type } = require('../models');
 const throwError = require('../utils/throwError');
 const Service = require('./Service');
+const CartService = require('./CartService');
 
 class UserService extends Service {
     constructor() {
@@ -22,20 +22,6 @@ class UserService extends Service {
         return user;
     }
 
-    async validUser(payload) {
-        const user = await this.find({ phoneNumber: payload.phoneNumber });
-
-        if (!user) {
-            return throwError(404, 'Not found phone number');
-        }
-
-        if (user.password != payload.password) {
-            return false;
-        }
-
-        return true;
-    }
-
     async setToken(phoneNumber, token) {
         return await this.update(phoneNumber, token);
     }
@@ -46,8 +32,29 @@ class UserService extends Service {
         return user.token;
     }
 
+    async getUserInfor(user) {
+        const favorite = await user.getProducts({ include: [Type] });
+        const address = await user.getAddresses({ include: City });
+        let carts = await CartService.getCartOfUser(user.id);
+
+        return {
+            ...user.toJSON(),
+            address,
+            carts,
+            favorite,
+        };
+    }
+
     async deleteToken(phoneNumber) {
         return await this.update(phoneNumber, { token: null });
+    }
+
+    async userExist(uuid) {
+        const userExist = await this.find({ uuid });
+
+        if (userExist) {
+            return userExist;
+        } else throwError(404, 'User not found');
     }
 
     async create(payload) {
@@ -61,32 +68,24 @@ class UserService extends Service {
         await this.model.create({ ...newUser, Carts: {} }, { include: [Cart] });
     }
 
-    async updateUser(uuid, payload) {
-        const isExist = await this.find({ uuid });
-
-        if (isExist)
-            await this.update(
-                {
-                    uuid: uuid,
-                },
-                payload,
-            );
-        else throwError(404, 'User doesnt exist');
+    async updateUser(user, payload) {
+        await this.update(
+            {
+                uuid: user.getDataValue('uuid'),
+            },
+            payload,
+        );
     }
 
-    async changePassword(uuid, payload) {
-        const userExist = await this.find({ uuid });
-
-        if (userExist)
-            if (userExist.dataValues.password === payload.password)
-                await this.update(
-                    {
-                        password: payload.password,
-                    },
-                    { password: payload.newPassword },
-                );
-            else throwError(400, 'Wrong old password');
-        else throwError(404, 'User doesnt exist');
+    async changePassword(user, payload) {
+        if (user.getDataValue('password') === payload.password)
+            await this.update(
+                {
+                    password: payload.password,
+                },
+                { password: payload.newPassword },
+            );
+        else throwError(400, 'Wrong old password');
     }
 }
 
