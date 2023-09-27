@@ -2,34 +2,26 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('Details', {
-            uuid: {
-                type: Sequelize.UUID,
+        await queryInterface.createTable('Favorites', {
+            userId: {
                 primaryKey: true,
                 allowNull: false,
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'Users',
+                    key: 'id',
+                    as: 'userId',
+                },
             },
             productId: {
                 type: Sequelize.INTEGER,
+                primaryKey: true,
                 allowNull: false,
                 references: {
                     model: 'Products',
                     key: 'id',
                     as: 'productId',
                 },
-            },
-            cartUUID: {
-                type: Sequelize.UUID,
-                allowNull: false,
-
-                references: {
-                    model: 'Carts',
-                    key: 'uuid',
-                    as: 'cartUUID',
-                },
-            },
-            quantity: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
             },
             createdAt: {
                 allowNull: false,
@@ -42,6 +34,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('Details');
+        await queryInterface.dropTable('Favorites');
     },
 };

@@ -36,10 +36,27 @@ module.exports = {
             statusId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
+                defaultValue: 1,
                 references: {
                     model: 'Statuses',
                     key: 'id',
                     as: 'statusId',
+                },
+            },
+            orderwayId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'Oderways',
+                    key: 'id',
+                    as: 'oderwayId',
+                },
+            },
+            addressId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: 'Addresses',
+                    key: 'id',
+                    as: 'addressId',
                 },
             },
             createdAt: {

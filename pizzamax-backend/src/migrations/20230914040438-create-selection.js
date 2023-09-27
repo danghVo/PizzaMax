@@ -8,24 +8,25 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.UUID,
             },
-            detailId: {
+            detailUUID: {
                 type: Sequelize.UUID,
                 allowNull: false,
                 references: {
                     model: 'Details',
                     key: 'uuid',
-                    as: 'detailId',
+                    as: 'detailUUID',
                 },
+                onDelete: 'CASCADE',
             },
-            selectionName: {
+            name: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            selectionPrice: {
+            price: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            selectionType: {
+            type: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
