@@ -1,7 +1,11 @@
-const Service = require('./Service');
 const throwError = require('../utils/throwError');
+const sectionServiceName = require('../utils/sectionServiceName');
 
-class ServiceService extends Service {
+const { Product } = require('../models');
+
+const Service = require('./Service');
+
+class SectionService extends Service {
     constructor(name, model, juncModel) {
         super(name, model, juncModel);
     }
@@ -20,6 +24,25 @@ class ServiceService extends Service {
         }
 
         return false;
+    }
+
+    static async getSection(type, name, product) {
+        const sectionService = sectionServiceName(type);
+
+        return await sectionService.find(
+            { name },
+            {
+                include: {
+                    model: Product,
+                    through: {
+                        model: sectionService.juncModel,
+                        where: {
+                            productId: product.getDataValue('id'),
+                        },
+                    },
+                },
+            },
+        );
     }
 
     async addSection(sections, productId) {
@@ -85,4 +108,4 @@ class ServiceService extends Service {
     }
 }
 
-module.exports = ServiceService;
+module.exports = SectionService;
