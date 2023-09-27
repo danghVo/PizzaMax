@@ -1,2 +1,3 @@
-export { default as userSlice, register } from './userSlice';
+export { default as userSlice } from './userSlice';
+export * as userFetch from './userSlice';
 export * as userSelector from './userSelector';
