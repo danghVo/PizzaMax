@@ -2,16 +2,18 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const { sequelize } = require('./models');
+const cookieParser = require('cookie-parser');
 
 const routers = require('./router');
 const authRouters = require('./router/authRouter');
 const adminRouters = require('./router/adminRouter');
-const authenticate = require('./validation/authenticate')
+const authenticate = require('./middlewares/authenticate');
 
-app.use(cors({ origin: true }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
-app.all(/\/api\/.*/, authenticate)
+app.all(/\/api\/.*/, authenticate);
 
 Object.values(routers).forEach((router) => {
     app.use('/api', router);
