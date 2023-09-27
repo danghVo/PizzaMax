@@ -14,7 +14,7 @@ class TimeController extends Controller {
             if (times) return res.json(times);
             else throwError(404, 'Nothing to show');
         } catch (error) {
-            return res.send(error?.message || error);
+            return res.status(error.status || 500).send(error.message || error);
         }
     }
 
@@ -24,7 +24,7 @@ class TimeController extends Controller {
 
             return res.send('Time is created successfuly');
         } catch (error) {
-            return res.send(error?.message || error);
+            return res.status(error.status || 500).send(error.message || error);
         }
     }
 
@@ -36,7 +36,7 @@ class TimeController extends Controller {
 
             return res.send('Time is updated successfully');
         } catch (error) {
-            return res.send(error?.message || error);
+            return res.status(error.status || 500).send(error.message || error);
         }
     }
 
@@ -48,7 +48,7 @@ class TimeController extends Controller {
 
             return res.send('Time id deleted successfully');
         } catch (error) {
-            return res.send(error?.message || error);
+            return res.status(error.status || 500).send(error.message || error);
         }
     }
 }
