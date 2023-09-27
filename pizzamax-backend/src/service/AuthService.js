@@ -1,8 +1,6 @@
-const { User, Cart, Status, Detail, Product, Type, Size, Drink, Flavor, Crust, Selection } = require('../models');
 const throwError = require('../utils/throwError');
 const Service = require('./Service');
 const UserService = require('./UserService');
-const CartService = require('./CartService');
 
 class AuthService extends Service {
     constructor() {
@@ -15,16 +13,11 @@ class AuthService extends Service {
             return throwError(404, 'Not found phone number');
         }
 
-        let carts = await CartService.getCartOfUser(user.dataValues.id);
-
         if (user.dataValues.password !== payload.password) {
             return false;
         }
 
-        return {
-            ...user.toJSON(),
-            carts,
-        };
+        return user;
     }
 
     async setToken(user, token) {
