@@ -17,10 +17,12 @@ module.exports = (sequelize, DataTypes) => {
             Drink,
             Cart,
             Detail,
+            User,
             ProductCrust,
             ProductSize,
             ProductFlavor,
             ProductDrink,
+            Favorite,
         }) {
             this.belongsTo(Type);
 
@@ -31,6 +33,7 @@ module.exports = (sequelize, DataTypes) => {
             this.belongsToMany(Flavor, { through: ProductFlavor, foreignKey: 'productId' });
             this.belongsToMany(Drink, { through: ProductDrink, foreignKey: 'productId' });
             this.belongsToMany(Cart, { through: Detail, foreignKey: 'productId' });
+            this.belongsToMany(User, { through: Favorite, foreignKey: 'productId' });
         }
 
         toJSON() {
@@ -61,11 +64,10 @@ module.exports = (sequelize, DataTypes) => {
                               ],
                           };
                       })
-                    : undefined;
+                    : [];
 
             return {
                 ...product,
-                id: undefined,
                 DiscountId: undefined,
                 TypeId: undefined,
                 typeId: undefined,
@@ -76,6 +78,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: product.Type.name,
                 discount: product.Discount || undefined,
                 discOptions,
+                price: parseInt(product.price.split('.').join('')),
             };
         }
     }

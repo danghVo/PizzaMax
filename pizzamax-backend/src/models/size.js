@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
                 ProductSize: undefined,
                 id: undefined,
                 Section: size.ProductSize.section,
+                price: parseInt(size.price.split('.').join('')),
             };
         }
     }

@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
                 ProductCrust: undefined,
                 id: undefined,
                 Section: crust.ProductCrust.section,
+                price: parseInt(crust.price.split('.').join('')),
             };
         }
     }

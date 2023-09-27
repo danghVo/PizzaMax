@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
         static associate({ Detail }) {
             this.belongsTo(Detail, {
                 foreignKey: {
-                    name: 'detailId',
+                    name: 'detailUUID',
                     type: DataTypes.UUID,
                 },
             });
@@ -34,15 +34,15 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: DataTypes.UUIDV4,
                 primaryKey: true,
             },
-            selectionName: {
+            name: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            selectionType: {
+            type: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
-            selectionPrice: {
+            price: {
                 type: DataTypes.STRING,
                 allowNull: false,
                 defaultValue: '0',

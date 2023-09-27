@@ -1,25 +1,28 @@
 'use strict';
 const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-    class City extends Model {
+    class Orderway extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        static associate({ Address }) {
-            this.hasMany(Address);
+        static associate({ Cart }) {
+            this.hasMany(Cart);
         }
     }
-    City.init(
+    Orderway.init(
         {
-            name: DataTypes.STRING,
+            name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
         },
         {
-            timestamps: false,
             sequelize,
-            modelName: 'City',
+            modelName: 'Orderway',
+            timestamps: false,
         },
     );
-    return City;
+    return Orderway;
 };

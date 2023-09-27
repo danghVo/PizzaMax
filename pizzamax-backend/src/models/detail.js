@@ -9,19 +9,19 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate({ Cart, Product, Selection }) {
             this.belongsTo(Product, { foreignKey: 'productId' });
-            this.belongsTo(Cart, {
-                foreignKey: {
-                    name: 'cartId',
-                    type: DataTypes.UUID,
-                },
-            });
+            this.belongsTo(Cart);
 
-            this.hasMany(Selection, {
-                foreignKey: {
-                    name: 'detailId',
-                    type: DataTypes.UUID,
-                },
-            });
+            this.hasMany(Selection);
+        }
+
+        toJSON() {
+            const detail = this.get();
+
+            return {
+                ...detail,
+                productId: undefined,
+                cartUUID: undefined,
+            };
         }
     }
     Detail.init(

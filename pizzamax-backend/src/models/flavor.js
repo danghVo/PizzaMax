@@ -20,6 +20,7 @@ module.exports = (sequelize, DataTypes) => {
                 ProductFlavor: undefined,
                 id: undefined,
                 Section: flavor.ProductFlavor.section,
+                price: parseInt(flavor.price.split('.').join('')),
             };
         }
     }
