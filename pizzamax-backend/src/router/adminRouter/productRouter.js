@@ -1,6 +1,9 @@
 const router = require('express').Router();
 const { ProductController } = require('../../controller');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
+router.all('/product/*', upload.single('image'));
 router.post('/product/create', ProductController.create);
 router.get('/product/get/:id', ProductController.get);
 router.get('/product/getAll', ProductController.getAll);
