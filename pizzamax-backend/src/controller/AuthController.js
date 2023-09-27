@@ -1,5 +1,5 @@
 const throwError = require('../utils/throwError');
-const { AuthService } = require('../service');
+const { AuthService, UserService } = require('../service');
 const jwt = require('jsonwebtoken');
 const generateToken = require('../utils/generateToken');
 require('dotenv').config();
@@ -20,61 +20,78 @@ class AuthController {
                 throwError(401, 'wrong password');
             }
         } catch (error) {
-            console.log(error);
-            return res.send(error?.message || error);
+            return res.status(error.status || 500).send(error.message || error);
         }
     }
 
     async createToken(req, res) {
         try {
-            const user = { phoneNumber: req.body.phoneNumber, password: req.body.password };
+            const user = res.locals.user;
             const accessToken = generateToken(
-                user,
-                user.phoneNumber == '0000000000' ? process.env.ADMIN_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET,
+                { phoneNumber: user.phoneNumber, password: user.password },
+                user.role == 'admin' ? process.env.ADMIN_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET,
             );
 
-            const refreshToken = generateToken(user, process.env.REFRESH_TOKEN_SECRET, '');
+            const refreshToken = generateToken(
+                { phoneNumber: user.phoneNumber, password: user.password },
+                process.env.REFRESH_TOKEN_SECRET,
+                '',
+            );
 
-            await AuthService.setToken(user, { token: refreshToken });
+            await AuthService.setToken(
+                { phoneNumber: user.phoneNumber, password: user.password },
+                { token: refreshToken },
+            );
+
+            res.cookie(
+                'token',
+                { accessToken, refreshToken },
+                {
+                    httpOnly: true,
+                    // Secure: true,
+                },
+            );
 
             return res.json({
-                accessToken,
-                refreshToken,
-                isAdmin: user.phoneNumber == '0000000000' && true,
+                isAdmin: user.role == 'admin' && true,
                 ...res.locals.user,
                 password: undefined,
             });
         } catch (error) {
-            console.log(error);
-            return res.send(error?.message || error);
+            return res.status(error.status || 500).send(error.message || error);
         }
     }
 
     async refreshToken(req, res) {
         try {
-            const user = { phoneNumber: req.body.phoneNumber, password: req.body.password };
-            const refreshToken = req.body.token;
-            const userRefreshToken = await AuthService.getToken(user);
+            const { refreshToken } = req.cookies['token'];
 
             if (!refreshToken) {
                 throwError(401, 'Missing token');
             }
 
-            if (userRefreshToken != refreshToken) {
-                throwError(403, 'Dont have right to access');
-            }
-
-            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error) => {
+            jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
                 if (error) throwError(403, 'Dont have right to access');
                 const accessToken = generateToken(
-                    user,
-                    user.phoneNumber == '0000000000' ? process.env.ADMIN_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET,
+                    { phoneNumber: decoded.phoneNumber, password: decoded.password },
+                    decoded.phoneNumber == '0000000000'
+                        ? process.env.ADMIN_TOKEN_SECRET
+                        : process.env.ACCESS_TOKEN_SECRET,
                 );
 
-                return res.json({ accessToken });
+                res.cookie(
+                    'token',
+                    { accessToken, refreshToken },
+                    {
+                        httpOnly: true,
+                        // Secure: true,
+                    },
+                );
             });
+
+            // return res.send();
         } catch (error) {
-            res.send(error.message || error);
+            res.status(error.status || 500).send(error.message || error);
         }
     }
 
@@ -86,7 +103,7 @@ class AuthController {
 
             return res.send('Log out');
         } catch (error) {
-            res.send(error.message || error);
+            res.status(error.status || 500).send(error.message || error);
         }
     }
 }
