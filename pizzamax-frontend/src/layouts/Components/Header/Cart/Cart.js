@@ -66,7 +66,7 @@ function Cart() {
                                     <div className={modalCs('orders-list')}>
                                         {cart.products.map((product, index) => (
                                             <div key={index} className={modalCs('product')}>
-                                                <img className={modalCs('product-img')} src={product.src} alt="" />
+                                                <img className={modalCs('product-img')} src={product.image} alt="" />
                                                 <div className={modalCs('product-quantity')}>{product.quantity}</div>
                                                 <div className={modalCs('product-content')}>
                                                     <div className={modalCs('product-title')}>{product.name}</div>
