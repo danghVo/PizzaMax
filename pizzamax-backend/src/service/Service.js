@@ -8,22 +8,36 @@ class Service {
         this.juncModel = juncModel;
     }
 
-    form(payload, mustFull = true) {}
+    async create(payload, include) {
+        return await this.model.create(payload, include && { include });
+    }
 
-    async getAll(subModel = undefined, filter = undefined) {
-        return await this.model.findAll(subModel && { include: subModel, where: filter });
+    async getAll(subModel = {}) {
+        return await this.model.findAll({ include: subModel });
+    }
+
+    async getAllBy(filter, subModel = undefined) {
+        return await this.model.findAll({ where: filter }, subModel && { include: subModel });
     }
 
     async find(filter, include = {}) {
         return await this.model.findOne({ where: filter }, include);
     }
 
+    async findJunc(filter, include = {}) {
+        return await this.juncModel.findOne({ where: filter }, include);
+    }
+
+    async deleteJunc(filter, include) {
+        return await this.juncModel.destroy({ where: filter }, include);
+    }
+
     async update(filter, update, include) {
         return await this.model.update(update, { where: filter }, include);
     }
 
-    async delete(filter) {
-        return await this.model.destroy({ where: filter });
+    async delete(filter, include = {}) {
+        return await this.model.destroy({ where: filter }, include);
     }
 }
 
