@@ -3,10 +3,11 @@ import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import Sidebar from '../Sidebar';
-import HomeProduct from '../HomeItem';
+import HomeProduct from '../HomeProduct';
 import styles from './Content.module.scss';
 import * as Icons from '~/components/Icons';
-import { productListSlice, fetchProductList, productListSelector } from '~/store/productList';
+import { useDebounce } from '~/hooks';
+import { productsSlice, fetchProducts, productsSelector } from '~/store/products';
 
 const cs = classNames.bind(styles);
 
@@ -15,15 +16,17 @@ function Content() {
 
     const dispatch = useDispatch();
 
-    const productList = useSelector(productListSelector.productList) || [];
+    const products = useSelector(productsSelector.productsShow) || [];
+
+    const debounceSearch = useDebounce(searchText, 500);
 
     useEffect(() => {
-        dispatch(fetchProductList());
+        dispatch(fetchProducts());
     }, []);
 
     useEffect(() => {
-        dispatch(productListSlice.actions.searchProduct(searchText));
-    }, [searchText]);
+        dispatch(productsSlice.actions.searchProduct(debounceSearch || ''));
+    }, [debounceSearch]);
 
     const handleInput = (e) => {
         setSearchText(e.target.value);
@@ -31,7 +34,7 @@ function Content() {
 
     return (
         <div id="Content" className={cs('wrapper')}>
-            <Sidebar categories={productList.map((item) => item.type)} />
+            <Sidebar categories={products.map((item) => item.type)} />
             <div className={cs('wrapper-search-page')}>
                 <div className={cs('wrapper-search')}>
                     <div className={cs('inner-search')}>
@@ -45,8 +48,8 @@ function Content() {
                     </div>
                 </div>
                 <div className={cs('product-list-wrapper')}>
-                    {productList &&
-                        productList.map((item, index) => (
+                    {products &&
+                        products.map((item, index) => (
                             <div key={index} id={item.type}>
                                 <h3 className={cs('product-type')}>{item.type}</h3>
                                 <div className="grid-cols-3 grid -mx-4">
