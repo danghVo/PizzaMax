@@ -9,7 +9,7 @@ import headerStyles from '../Header.module.scss';
 import modalStyles from './CartModal.module.scss';
 import images from '~/assets/images';
 import * as Icons from '~/components/Icons';
-import { cartSlice, cartSelector } from '~/store/cart';
+import { cartSlice, cartSelector, cartThunk } from '~/store/cart';
 
 const headerCs = classNames.bind(headerStyles);
 const modalCs = classNames.bind(modalStyles);
@@ -30,21 +30,23 @@ function Cart() {
     };
 
     const handleIncreaseQuantity = (product) => {
-        dispatch(cartSlice.actions.increment(product));
+        dispatch(cartThunk.increase(product));
     };
 
     const handleDecreaseQuantity = (product) => {
-        dispatch(cartSlice.actions.decrement(product));
+        if (product.detail.quantity === 1) {
+            dispatch(cartThunk.removeFromCart(product));
+        } else dispatch(cartThunk.decrease(product));
     };
 
     const handleDeleteProduct = (product) => {
-        dispatch(cartSlice.actions.removeFromCart(product));
+        dispatch(cartThunk.removeFromCart(product));
     };
 
     return (
         <>
             <Button handleClick={handleOpenModal} animation shadow icon={<Icons.cart />}>
-                <span className={headerCs('cart-quantity')}>{cart.quantity}</span>
+                <span className={headerCs('cart-quantity')}>{cart.totalQuantity}</span>
                 View Cart
             </Button>
             <AnimatePresence>
@@ -67,33 +69,52 @@ function Cart() {
                                         {cart.products.map((product, index) => (
                                             <div key={index} className={modalCs('product')}>
                                                 <img className={modalCs('product-img')} src={product.image} alt="" />
-                                                <div className={modalCs('product-quantity')}>{product.quantity}</div>
+                                                <div className={modalCs('product-quantity')}>
+                                                    {product.detail.quantity}
+                                                </div>
+                                                {product.detail.saleOff && (
+                                                    <div className={modalCs('product-saleOff')}>
+                                                        -{product.detail.saleOff}%
+                                                    </div>
+                                                )}
                                                 <div className={modalCs('product-content')}>
                                                     <div className={modalCs('product-title')}>{product.name}</div>
                                                     <div className={modalCs('product-des')}>{product.description}</div>
                                                     <div className={modalCs('product-discOptions')}>
-                                                        {product.discOptions.map((disc, index) => (
+                                                        {product.Selection.map((disc, index) => (
                                                             <div key={index} className={modalCs('product-disc')}>
                                                                 <div className={modalCs('product-disc-title')}>
-                                                                    {disc.title}
+                                                                    {disc.section}
                                                                 </div>
 
                                                                 <div className={modalCs('product-disc-selection')}>
-                                                                    {disc.nameSelection}
+                                                                    {disc.name}
                                                                 </div>
                                                             </div>
                                                         ))}
                                                     </div>
 
                                                     <div className={modalCs('product-disc-actions')}>
-                                                        <div className={modalCs('product-disc-temp-price')}>
-                                                            {(product.price * product.quantity).toLocaleString(
-                                                                'vi-VN',
-                                                                {
+                                                        <div className={modalCs('product-disc-price')}>
+                                                            {product.detail.saleOff && (
+                                                                <span className={modalCs('price-saleOff')}>
+                                                                    {(
+                                                                        (product.detail.price *
+                                                                            (100 - product.detail.saleOff)) /
+                                                                        100
+                                                                    ).toLocaleString('vi-VN', {
+                                                                        style: 'currency',
+                                                                        currency: 'VND',
+                                                                    })}
+                                                                </span>
+                                                            )}
+
+                                                            <span className={modalCs('price')}>
+                                                                {product.detail.price.toLocaleString('vi-VN', {
                                                                     style: 'currency',
                                                                     currency: 'VND',
-                                                                },
-                                                            )}
+                                                                })}
+                                                            </span>
                                                         </div>
 
                                                         <div className={modalCs('product-disc-btns')}>
