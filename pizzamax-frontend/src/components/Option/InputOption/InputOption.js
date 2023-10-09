@@ -5,15 +5,16 @@ import { useRef, useState, useEffect, forwardRef, useImperativeHandle } from 're
 import Option from '../Option';
 import Button from '~/components/Button';
 import * as Icons from '~/components/Icons';
+import Input from '~/components/Input';
 
 const cs = classNames.bind(styles);
 
-function InputSelection({ placeholder, optionData = [], className, selecting }, ref) {
+function InputOption({ placeholder, optionData = [], className, selecting, rules }, ref) {
     const [isOpen, setIsOpen] = useState(false);
     const [isArrowUp, setIsArrowUp] = useState(false);
     const [isWrapperFocus, setIsWrapperFocus] = useState(false);
-    const [inputText, setInputText] = useState(selecting.currentSelect);
-    const [currentSelect, setCurrentSelect] = useState(selecting.currentSelect);
+    const [inputText, setInputText] = useState(selecting.currentSelectForState || '');
+    const [currentSelect, setCurrentSelect] = useState(selecting.currentSelectForState || '');
     const [optionCurrent, setOptionCurrent] = useState([]);
 
     const wrapperRef = useRef();
@@ -42,13 +43,13 @@ function InputSelection({ placeholder, optionData = [], className, selecting }, 
     }, [isOpen]);
 
     useEffect(() => {
-        let tempOption = optionData;
-        if (currentSelect !== inputText || currentSelect === '') {
-            tempOption = optionData.filter((item) => item.toLowerCase().includes(inputText.toLowerCase()));
+        let localOption = optionData;
+        if ((currentSelect !== inputText || currentSelect === '') && localOption.length > 0) {
+            localOption = optionData.filter((item) => item.toLowerCase().includes(inputText.toLowerCase()));
         }
 
         setOptionCurrent(
-            tempOption.map((item, index) => (
+            localOption.map((item, index) => (
                 <div
                     className={cs('inputOption-item', { active: currentSelect === item })}
                     key={index}
@@ -58,11 +59,15 @@ function InputSelection({ placeholder, optionData = [], className, selecting }, 
                 </div>
             )),
         );
-    }, [inputText]);
+    }, [optionData]);
 
     useEffect(() => {
-        selecting.handleSetOption(selecting.callback, currentSelect);
+        selecting.handleSetOption(selecting.setSelectionToState, currentSelect);
     }, [currentSelect]);
+
+    useEffect(() => {
+        setInputText(selecting.currentSelectForState);
+    }, [selecting.currentSelectForState]);
 
     const handleOpenOption = () => {
         setIsOpen(true);
@@ -106,11 +111,12 @@ function InputSelection({ placeholder, optionData = [], className, selecting }, 
     return (
         <Option onClose={closeOption} ref={selectionRef} optionData={optionCurrent}>
             <div ref={wrapperRef} className={wrapperClassName} onClick={handleOpenOption}>
-                <input
+                <Input
                     ref={inputRef}
                     value={inputText}
-                    onInput={handleInput}
+                    onChange={handleInput}
                     onBlur={handleBlurInput}
+                    rules={rules}
                     className={cs('inputOption-input')}
                     placeholder={placeholder}
                 />
@@ -128,4 +134,4 @@ function InputSelection({ placeholder, optionData = [], className, selecting }, 
     );
 }
 
-export default forwardRef(InputSelection);
+export default forwardRef(InputOption);
