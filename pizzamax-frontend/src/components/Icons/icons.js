@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 export const location = ({ className, height = '2rem', width = '1.5rem' }) => {
     return (
         <svg
@@ -111,6 +113,24 @@ export const heart = ({ className, width = '1.4rem', height = '1.4rem' }) => {
     );
 };
 
+export const heartFull = ({ className, width = '1.4rem', height = '1.4rem' }) => {
+    return (
+        <motion.svg
+            fill="rgb(251, 40, 40)"
+            xmlns="http://www.w3.org/2000/svg"
+            width={width}
+            height={height}
+            className={className}
+            initial={{ opacity: 0.5, rotate: '0deg' }}
+            animate={{ opacity: 1, rotate: ['0deg', '30deg', '0deg', '-30deg', '0deg'] }}
+            transition={{ duration: 0.3, ease: 'easeIn' }}
+            viewBox="0 0 512 512"
+        >
+            <path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z" />
+        </motion.svg>
+    );
+};
+
 export const minus = ({ className, width = '2.4rem', height = '2.4rem' }) => {
     return (
         <svg className={className} width={width} height={height} focusable="false" viewBox="0 0 24 24">
@@ -131,6 +151,28 @@ export const checkBuy = ({ className, width = '2.2rem', height = '2.2rem' }) => 
     return (
         <svg className={className} width={width} height={height} focusable="false" viewBox="0 0 24 24">
             <path d="M20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4C12.76,4 13.5,4.11 14.2, 4.31L15.77,2.74C14.61,2.26 13.34,2 12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0, 0 22,12M7.91,10.08L6.5,11.5L11,16L21,6L19.59,4.58L11,13.17L7.91,10.08Z"></path>
+        </svg>
+    );
+};
+
+export const loading = ({ className, width = '2rem', height = '2rem', stroke }) => {
+    return (
+        <svg
+            width={width}
+            height={height}
+            className={`loading ${className}`}
+            viewBox="0 0 100 100"
+            style={{ display: 'block' }}
+        >
+            <circle
+                cx="50"
+                cy="50"
+                fill="none"
+                stroke={stroke || '#ffffff'}
+                strokeWidth="10"
+                r="35"
+                strokeDasharray="164.93361431346415 56.97787143782138"
+            />
         </svg>
     );
 };
