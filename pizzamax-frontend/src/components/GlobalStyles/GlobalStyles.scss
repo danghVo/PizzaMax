@@ -55,3 +55,17 @@ body.hide-scroll {
     // height: 100%;
     overflow: hidden;
 }
+
+// Loading
+@keyframes loading {
+    from {
+        rotate: 0deg;
+    }
+    to {
+        rotate: 360deg;
+    }
+}
+
+.loading {
+    animation: loading 1s infinite linear;
+}
