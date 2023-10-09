@@ -1,6 +1,6 @@
 .location-modal {
     width: 500px;
-    min-height: 418px;
+    min-height: 300px;
     padding: 10px;
 
     display: flex;
@@ -59,6 +59,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 8px;
 
     .modal-location-btn {
         height: 32px;
@@ -86,6 +87,27 @@
 
 .infor-selection {
     margin-top: 10px;
+    font-size: 1.4rem;
+}
+
+.infor-input {
+    border: 1px solid #d3d3d3;
+    height: 40px;
+    border-radius: 50px;
+    padding: 0 12px;
+    color: rgb(36, 40, 43);
+    font-weight: 400;
+    font-size: 1.4rem;
+    caret-color: #757575;
+    width: 100%;
+}
+
+.infor-city {
+    font-size: 1.4rem;
+}
+
+.infor-desc {
+    margin-top: 0.75rem;
 }
 
 // select button
@@ -99,4 +121,24 @@
         background-color: rgba(0, 0, 0, 0.12);
         pointer-events: none;
     }
+}
+
+// valid
+.valid {
+    background-color: rgb(253, 237, 237);
+    border-radius: 50px;
+    height: 48px;
+    padding: 6px 16px;
+    margin-top: 10px;
+    display: flex;
+    align-items: center;
+
+    color: rgb(95, 33, 32);
+    font-weight: 400;
+    font-size: 14px;
+}
+
+.valid-icon {
+    fill: rgb(239, 83, 80);
+    margin-right: 12px;
 }

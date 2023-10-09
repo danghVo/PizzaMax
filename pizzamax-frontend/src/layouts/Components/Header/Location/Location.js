@@ -2,27 +2,24 @@ import classNames from 'classnames/bind';
 import headerStyles from '../Header.module.scss';
 import modalStyles from './LocationModal.module.scss';
 import { useState, useRef, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import * as Icons from '~/components/Icons';
 import Button from '~/components/Button';
 import Modal from '~/components/Modal';
 import images from '~/assets/images';
 import { InputOption } from '~/components/Option/';
+import Input from '~/components/Input';
+import Form from '~/components/Form';
+import { number, required } from '~/rules';
+import { addressThunk, addressSelector, addressSlice } from '~/store/address';
+import { userSelector, userSlice } from '~/store/user';
+import { districtService } from '~/services';
 
 const headerCs = classNames.bind(headerStyles);
 const modalCs = classNames.bind(modalStyles);
 
-const cityOption = [
-    'Faisalabad',
-    'Hyderabad',
-    'Karachi',
-    'Kharian',
-    'Lahore',
-    'Multan',
-    'Rawalpindi',
-    'Sialkot',
-    'Wah cantt',
-];
+const cityOption = ['Cần Thơ', 'Hồ Chí Minh'];
 
 const areaOption = [
     ' New Rizvia Gulzary Hijri',
@@ -44,56 +41,115 @@ const areaOption = [
 
 function Location() {
     const [openModal, setOpenModal] = useState(false);
-    const [orderType, setOrderType] = useState(null);
-    const [locationFirst, setLocationFirst] = useState('');
-    const [locationSecond, setLocationSecond] = useState('');
+    const [orderType, setOrderType] = useState(1);
+    const [location, setLocation] = useState('');
+    const [addressForm, setAddress] = useState({
+        street: '',
+        alley: '',
+        district: '',
+        houseNumber: '',
+        city: '',
+    });
+    const [addLocation, setAddLocaltion] = useState(false);
+    const [districtOption, setDistrictOption] = useState([]);
+    const [errMessage, setErrMessage] = useState('');
+    const [loading, setLoading] = useState(false);
 
+    const addressRef = useRef();
     const cityOptionRef = useRef();
-    const areaOptionRef = useRef();
-    const branchOptionRef = useRef();
-    const modalRef = useRef();
+    const districtOptionRef = useRef();
 
-    const orderTypeStorage = window.localStorage.getItem('oderType');
-    const locationFirstStorage = window.localStorage.getItem('locationFirst');
-    const locationSecondStorage = window.localStorage.getItem('locationSecond');
-    const locationUI = locationSecondStorage + ', ' + locationFirstStorage;
+    const user = useSelector(userSelector.user);
+
+    const shopAddress = useSelector(addressSelector.shopAddress);
+    const userAddress = useSelector(addressSelector.userAddress);
+
+    const currentAddress = JSON.parse(window.localStorage.getItem('currentAddress')) || {};
+
+    const dispatch = useDispatch();
 
     useEffect(() => {
-        if (orderTypeStorage) setOrderType(orderTypeStorage || 1);
-        if (locationFirstStorage) setLocationFirst(locationFirstStorage);
-        if (locationSecondStorage) setLocationSecond(locationSecondStorage);
+        dispatch(addressThunk.getAllShopAddress());
     }, []);
+
+    useEffect(() => {
+        if (user) dispatch(addressThunk.getAllUserAddress({ uuid: user.uuid }));
+    }, [user]);
+
+    useEffect(() => {
+        setLocation(currentAddress[orderType]);
+    }, [orderType]);
+
+    useEffect(() => {
+        setAddress((prev) => ({ ...prev, district: '' }));
+
+        if (addressForm.city !== '') {
+            const getDistrictOfCity = async () => {
+                const districts = await districtService.getDistricts(addressForm.city);
+
+                setDistrictOption(districts);
+            };
+
+            getDistrictOfCity();
+        }
+    }, [addressForm.city]);
 
     const handleCloseModal = () => {
         setOpenModal(false);
     };
 
     const handleChooseDelivery = () => {
+        addressRef.current?.clearOption();
         setOrderType(1);
-
-        cityOptionRef.current?.clearOption();
-        branchOptionRef.current?.clearOption();
+        setAddLocaltion(false);
     };
 
     const handleChoosePickUp = () => {
+        addressRef.current?.clearOption();
+        setAddLocaltion(false);
         setOrderType(2);
-
-        cityOptionRef.current?.clearOption();
-        areaOptionRef.current?.clearOption();
     };
 
-    const handleSetOption = (callback, selection) => {
-        callback(selection);
+    const handleSetOption = (setSelectionToState, currentSelectForState) => {
+        setSelectionToState(currentSelectForState);
     };
 
     const handleClickSelectBtn = () => {
-        window.localStorage.setItem('oderType', orderType);
-        window.localStorage.setItem('locationFirst', locationFirst);
-        window.localStorage.setItem('locationSecond', locationSecond);
-        modalRef.current.closeModal();
+        window.localStorage.setItem(
+            'currentAddress',
+            JSON.stringify({
+                ...currentAddress,
+                [orderType]: location,
+            }),
+        );
+        handleCloseModal();
     };
 
-    // console.log(orderType);
+    const handleAddLocaltion = async () => {
+        if (user) {
+            setLoading(true);
+            await dispatch(
+                addressThunk.addAddressByUser({
+                    uuid: user.uuid,
+                    ...addressForm,
+                    alley: parseInt(addressForm),
+                }),
+            );
+            setLoading(false);
+        } else setErrMessage('You must log in first');
+    };
+
+    const handleError = () => {
+        setErrMessage('Please complete form');
+    };
+
+    const handleSetAddLocaltion = () => {
+        setAddLocaltion(true);
+    };
+
+    const handleSetChooseLocation = () => {
+        setAddLocaltion(false);
+    };
 
     return (
         <>
@@ -102,13 +158,13 @@ function Location() {
                 handleClick={(e) => setOpenModal(true)}
                 theme="default"
                 icon={<Icons.location />}
-                header={orderType === 1 ? 'Deliver to' : 'Pick-up from'}
+                header={orderType === 1 ? 'Pick-up from' : 'Deliver to'}
             >
-                {locationUI ? <span>{locationUI}</span> : ''}
+                {location ? <span>{location}</span> : ''}
             </Button>
 
             {openModal && (
-                <Modal ref={modalRef} className={modalCs('location-modal')} onClose={handleCloseModal}>
+                <Modal className={modalCs('location-modal')} onClose={handleCloseModal}>
                     <div className={modalCs('modal-logo')}>
                         <img src={images.logo} alt="logo" />
                     </div>
@@ -124,7 +180,7 @@ function Location() {
                                 size="small"
                                 handleClick={handleChooseDelivery}
                             >
-                                DELIVERY
+                                PICK-UP
                             </Button>
 
                             <Button
@@ -134,7 +190,7 @@ function Location() {
                                 size="small"
                                 handleClick={handleChoosePickUp}
                             >
-                                PICK-UP
+                                DELIVERY
                             </Button>
                         </div>
                     </div>
@@ -146,60 +202,132 @@ function Location() {
                                 : 'Which outlet would you like to pick-up from?'}
                         </p>
 
-                        <Button
-                            className={modalCs('modal-location-btn')}
-                            icon={<Icons.locationModal />}
-                            theme="default"
-                        >
-                            Use Current Location
-                        </Button>
+                        {orderType === 2 && (
+                            <div className="flex">
+                                <Button
+                                    className={modalCs('modal-location-btn')}
+                                    icon={<Icons.locationModal />}
+                                    theme="default"
+                                    handleClick={addLocation ? handleSetChooseLocation : handleSetAddLocaltion}
+                                >
+                                    {addLocation ? 'Use Your Location' : 'Add Your Location'}
+                                </Button>
+                            </div>
+                        )}
                     </div>
 
                     <div className={modalCs('modal-infor')}>
-                        <InputOption
-                            ref={cityOptionRef}
-                            selecting={{ currentSelect: locationFirst, handleSetOption, callback: setLocationFirst }}
-                            className={modalCs('infor-selection')}
-                            placeholder="Select City / Region"
-                            optionData={cityOption}
-                        />
+                        {!addLocation ? (
+                            <>
+                                <InputOption
+                                    ref={addressRef}
+                                    selecting={{
+                                        currentSelectForState: location,
+                                        handleSetOption,
+                                        setSelectionToState: setLocation,
+                                    }}
+                                    className={modalCs('infor-selection')}
+                                    placeholder="Select Address"
+                                    optionData={orderType === 1 ? shopAddress : userAddress}
+                                />
 
-                        {orderType === 1 ? (
-                            <InputOption
-                                ref={areaOptionRef}
-                                selecting={{
-                                    currentSelect: locationSecond,
-                                    handleSetOption,
-                                    callback: setLocationSecond,
-                                }}
-                                className={modalCs('infor-selection')}
-                                placeholder="Select Area / Sub Region"
-                                optionData={areaOption}
-                            />
+                                <Button
+                                    theme="primary"
+                                    size="small"
+                                    animation
+                                    hover
+                                    handleClick={handleClickSelectBtn}
+                                    className={modalCs('modal-select-btn')}
+                                >
+                                    Select
+                                </Button>
+                            </>
                         ) : (
-                            <InputOption
-                                ref={branchOptionRef}
-                                selecting={{
-                                    currentSelect: locationSecond,
-                                    handleSetOption,
-                                    callback: setLocationSecond,
-                                }}
-                                className={modalCs('infor-selection')}
-                                placeholder="Select Branch"
-                                optionData={areaOption}
-                            />
-                        )}
+                            <>
+                                {errMessage && (
+                                    <p className={modalCs('valid')}>
+                                        <Icons.valid className={modalCs('valid-icon')} />
+                                        {errMessage}
+                                    </p>
+                                )}
+                                <Form handlesubmit={handleAddLocaltion} handleError={handleError}>
+                                    <div className="flex gap-2 mt-3">
+                                        <div>
+                                            <Input
+                                                placeholder="House Number"
+                                                value={addressForm.houseNumber}
+                                                onChange={(e) =>
+                                                    setAddress((prev) => ({ ...prev, houseNumber: e.target.value }))
+                                                }
+                                                rules={[required]}
+                                                className={modalCs('infor-input', 'infor-street')}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Input
+                                                placeholder="Alley"
+                                                value={addressForm.alley}
+                                                onChange={(e) =>
+                                                    setAddress((prev) => ({ ...prev, alley: e.target.value }))
+                                                }
+                                                rules={[number]}
+                                                className={modalCs('infor-input', 'infor-street')}
+                                            />
+                                        </div>
+                                        <InputOption
+                                            ref={cityOptionRef}
+                                            rules={[required]}
+                                            selecting={{
+                                                currentSelectForState: addressForm.city,
+                                                handleSetOption,
+                                                setSelectionToState: (selection) =>
+                                                    setAddress((prev) => ({ ...prev, city: selection })),
+                                            }}
+                                            className={modalCs('infor-city')}
+                                            optionData={cityOption}
+                                            placeholder="Select City"
+                                        />
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <div className="flex-1">
+                                            <Input
+                                                placeholder="Street"
+                                                value={addressForm.street}
+                                                onChange={(e) =>
+                                                    setAddress((prev) => ({ ...prev, street: e.target.value }))
+                                                }
+                                                rules={[required]}
+                                                className={modalCs('infor-input', 'infor-street')}
+                                            />
+                                        </div>
+                                        <InputOption
+                                            placeholder="District"
+                                            ref={districtOptionRef}
+                                            rules={[]}
+                                            selecting={{
+                                                currentSelectForState: addressForm.district,
+                                                handleSetOption,
+                                                setSelectionToState: (selection) =>
+                                                    setAddress((prev) => ({ ...prev, district: selection })),
+                                            }}
+                                            className={modalCs('infor-district')}
+                                            optionData={districtOption}
+                                        />
+                                    </div>
 
-                        <Button
-                            theme="primary"
-                            size="small"
-                            animation
-                            hover
-                            handleClick={handleClickSelectBtn}
-                            className={modalCs('modal-select-btn', { disable: !locationFirst || !locationSecond })}
-                        >
-                            Select
-                        </Button>
+                                    <Button
+                                        theme="primary"
+                                        size="small"
+                                        do="submit"
+                                        animation
+                                        hover
+                                        className={modalCs('modal-select-btn')}
+                                    >
+                                        {loading ? <Icons.loading /> : 'Add Address'}
+                                    </Button>
+                                </Form>
+                            </>
+                        )}
                     </div>
                 </Modal>
             )}
