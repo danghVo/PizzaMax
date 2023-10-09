@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 
-import { productService } from '~/services';
+import { fetchProducts } from './productThunk';
 
 const productsSlice = createSlice({
     name: 'products',
@@ -32,23 +32,6 @@ const productsSlice = createSlice({
                 state.productsShow = action.payload;
             });
     },
-});
-
-export const fetchProducts = createAsyncThunk('productss/fetchProducts', async () => {
-    const res = await productService.getAll();
-
-    const types = res.reduce((accu, curr) => (accu.includes(curr.type) ? [...accu] : [...accu, curr.type]), []);
-
-    const products = types.map((type) => {
-        let products = res.filter((item) => item.type === type);
-
-        return {
-            type,
-            products,
-        };
-    });
-
-    return products;
 });
 
 export default productsSlice;
