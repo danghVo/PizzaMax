@@ -1,36 +1,37 @@
 import classNames from 'classnames/bind';
 import styles from './Button.module.scss';
-import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { forwardRef, useEffect, useRef, useState, useImperativeHandle } from 'react';
+import { AnimatePresence } from 'framer-motion';
 
-import { hookDebounce } from '~/hooks';
-import useDebounce from '~/hooks/useDebounce';
 import ButtonAnimation from './ButtonAnimation';
-import { h } from 'vue';
 
 const cs = classNames.bind(styles);
 
-function Button({
-    children,
-    header,
-    to,
-    href,
-    type = 'text',
-    theme = 'primary',
-    size = 'medium',
-    shadow,
-    icon,
-    className,
-    hover = false,
-    animation: isAnimation = false,
-    handleClick = () => {},
-    ...passprop
-}) {
+function Button(
+    {
+        children,
+        header,
+        to,
+        href,
+        type = 'text',
+        theme = 'primary',
+        size = 'medium',
+        shadow,
+        icon,
+        className,
+        hover = false,
+        animation: isAnimation = false,
+        handleClick = () => {},
+        ...passprop
+    },
+    ref,
+) {
     const [animation, setAnimation] = useState([]);
     const [animationEnd, setAnimationEnd] = useState(false);
-    const [hold, setHold] = useState(false);
 
     const buttonRef = useRef();
+
+    useImperativeHandle(ref, () => buttonRef.current);
 
     let Tag = 'button';
 
@@ -73,7 +74,7 @@ function Button({
             let width = buttonRef.current.clientWidth * 2;
             let height = buttonRef.current.clientWidth * 2;
 
-            if (type==='icon') {
+            if (type === 'icon') {
                 x = '50%';
                 y = '50%';
                 width = '100%';
@@ -108,7 +109,7 @@ function Button({
             className={classNames}
         >
             {icon && <span className={cs('icon-content')}>{icon}</span>}
-            {type==='icon' ? (
+            {type === 'icon' ? (
                 ''
             ) : (
                 <span className={cs('content')}>
@@ -125,4 +126,4 @@ function Button({
     );
 }
 
-export default Button;
+export default forwardRef(Button);
