@@ -69,6 +69,15 @@
 .location {
     width: 400px;
     justify-content: flex-start !important;
+
+    span {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: break-all;
+    }
 }
 
 // Actions
