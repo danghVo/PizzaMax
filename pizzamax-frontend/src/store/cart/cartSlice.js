@@ -1,67 +1,66 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
+
+import { addToCart, removeFromCart, increase, decrease } from './cartThunk';
+
+const setCartState = (state, result) => {
+    state.uuid = result.uuid || '';
+    state.total = result.total || 0;
+    state.subTotal = result.subTotal || 0;
+    state.deliveryCharge = result.deliveryCharge || 0;
+    state.products = result.products || [];
+    state.totalQuantity = result.products.reduce((accu, current) => {
+        return accu + parseInt(current.detail.quantity);
+    }, 0);
+};
 
 const cartSlice = createSlice({
     name: 'cart',
     initialState: {
+        uuid: null,
+        totalQuantity: 0,
         products: [],
-        quantity: 0,
         subTotal: 0,
         deliveryCharge: 0,
         total: 0,
+        oldCarts: [],
     },
     reducers: {
-        addToCart(state, action) {
-            const product = action.payload;
-            state.products.push(action.payload);
-            state.quantity += product.quantity;
-            state.subTotal += product.price * product.quantity;
+        setCartFromUser(state, action) {
+            const currentCart = action.payload.currentCart;
+            state.oldCarts = action.payload.carts;
+            setCartState(state, currentCart);
         },
-        removeFromCart(state, action) {
-            state.products = state.products.filter((product) => product.name !== action.payload.name);
-            state.quantity -= action.payload.quantity;
-            state.subTotal -= action.payload.quantity * action.payload.price;
-        },
-        setPrice(state, action) {},
-        increment(state, action) {
-            state.products = state.products.map((product) => {
-                if (product.name === action.payload.name) {
-                    product.quantity++;
-                    state.subTotal += product.price;
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(addToCart.fulfilled, (state, action) => {
+                const result = action.payload;
+
+                if (!result.error) {
+                    setCartState(state, result);
                 }
+            })
+            .addCase(removeFromCart.fulfilled, (state, action) => {
+                const result = action.payload;
 
-                return product;
-            });
-            state.quantity++;
-        },
-        decrement(state, action) {
-            if (action.payload.quantity === 1) {
-                state.products = state.products.filter((product) => product.name !== action.payload.name);
-            } else {
-                state.products = state.products.map((product) => {
-                    if (product.name === action.payload.name) {
-                        product.quantity--;
-                    }
-                    return product;
-                });
-            }
-
-            state.subTotal -= action.payload.price;
-            state.quantity--;
-        },
-        chooseSelection(state, action) {
-            state.products.map((product) => {
-                if (product.name === action.payload.name) {
-                    product.discOptions[action.payload.indexOption] = action.payload.selection;
-                    let price = 0;
-                    product.discOptions.map((item) => {
-                        if (item.price) price += item.price;
-                    });
-                    product.price = price;
+                if (!result.error) {
+                    setCartState(state, result);
                 }
+            })
+            .addCase(increase.fulfilled, (state, action) => {
+                const result = action.payload;
 
-                return product;
+                if (!result.error) {
+                    setCartState(state, result);
+                }
+            })
+            .addCase(decrease.fulfilled, (state, action) => {
+                const result = action.payload;
+
+                if (!result.error) {
+                    setCartState(state, result);
+                }
             });
-        },
     },
 });
 
