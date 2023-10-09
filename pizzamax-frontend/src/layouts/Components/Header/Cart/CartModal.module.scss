@@ -98,6 +98,18 @@
     top: 6px;
 }
 
+.product-saleOff {
+    position: absolute;
+    right: 0;
+    top: 6px;
+    font-size: 1.2rem;
+    color: black;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    background-color: #fbc000;
+}
+
 .product-content {
     width: 100%;
 }
@@ -126,11 +138,17 @@
     margin-top: 2px;
 }
 
-.product-disc-temp-price {
+.product-disc-price {
     color: rgb(17, 17, 17);
     font-weight: 500;
     text-align: end;
     margin-top: 6px;
+}
+
+.product-disc-price:has(.price-saleOff) .price {
+    text-decoration: line-through;
+    margin-left: 8px;
+    opacity: 0.5;
 }
 
 .product-disc-btns {
