@@ -8,17 +8,15 @@ import * as Icons from '../Icons';
 
 const cs = classNames.bind(styles);
 
-function Modal({ children, onClose, className, noCloseBtn, initial, animate, transition, exit }, modalRef) {
+function Modal({ children, onClose, className, noCloseBtn, initial, animate, transition, exit }) {
     const overlayRef = useRef();
     const closeBtnRef = useRef();
     const body = document.querySelector('body');
 
-    useImperativeHandle(modalRef, () => ({
-        closeModal,
-    }));
-
     useEffect(() => {
         body.classList.add('hide-scroll');
+
+        return () => body.classList.remove('hide-scroll');
     }, []);
 
     const wrapperClass = cs('wrapper', {
@@ -35,20 +33,15 @@ function Modal({ children, onClose, className, noCloseBtn, initial, animate, tra
     const handleCloseModal = (e) => {
         if (e.target === overlayRef.current) {
             e.stopPropagation();
-            closeModal();
+            onClose();
         }
-    };
-
-    const closeModal = () => {
-        onClose();
-        body.classList.remove('hide-scroll');
     };
 
     return ReactDOM.createPortal(
         <div className={cs('overlay')} ref={overlayRef} onMouseDown={handleCloseModal}>
             <motion.div className={wrapperClass} {...animation}>
                 {!noCloseBtn && (
-                    <span ref={closeBtnRef} className={cs('close')} onClick={closeModal}>
+                    <span ref={closeBtnRef} className={cs('close')} onClick={onClose}>
                         <Icons.close />
                     </span>
                 )}
@@ -59,4 +52,4 @@ function Modal({ children, onClose, className, noCloseBtn, initial, animate, tra
     );
 }
 
-export default forwardRef(Modal);
+export default Modal;
