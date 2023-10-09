@@ -1,5 +1,5 @@
 import classNames from 'classnames/bind';
-import modalStyles from './UserAction.module.scss';
+import styles from './UserAction.module.scss';
 import { useState, useRef, useEffect, useLayoutEffect } from 'react';
 
 import * as Icons from '~/components/Icons';
@@ -7,9 +7,9 @@ import Button from '~/components/Button';
 import ModalAuth from './ModalAuth';
 import UserMenu from './UserMenu';
 import { useDispatch, useSelector } from 'react-redux';
-import { userSelector, userFetch } from '~/store/user';
+import { userSelector, userThunk } from '~/store/user';
 
-const modalCs = classNames.bind(modalStyles);
+const cs = classNames.bind(styles);
 
 function UserAction() {
     const [openModal, setOpenModal] = useState(false);
@@ -17,11 +17,10 @@ function UserAction() {
     const dispatch = useDispatch();
 
     const user = useSelector(userSelector.user);
-    console.log(user);
 
     useLayoutEffect(() => {
         // dispatch get user profile
-        dispatch(userFetch.getInforByToken());
+        dispatch(userThunk.getInforByToken());
     }, []);
 
     const handleOpenModal = () => {
@@ -34,10 +33,8 @@ function UserAction() {
 
     return (
         <>
-            {user ? (
-                <Button animation theme="default" icon={<Icons.user />}>
-                    <UserMenu user={user}></UserMenu>
-                </Button>
+            {user && !openModal ? (
+                <UserMenu classNames={'user-menu'} user={user}></UserMenu>
             ) : (
                 <>
                     <Button animation theme="default" icon={<Icons.user />} handleClick={handleOpenModal}>
