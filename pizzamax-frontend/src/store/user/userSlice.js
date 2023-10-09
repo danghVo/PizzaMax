@@ -1,79 +1,90 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
-import { userService, authService } from '~/services';
+import { createSlice } from '@reduxjs/toolkit';
 import { checkFailMessage } from '~/utils';
+
+import { register, login, logOut, addFavor, removeFavor, getInforByToken } from './userThunk';
+
+const setUserState = (state, result = {}) => {
+    state.name = result.name || '';
+    state.phoneNumber = result.phoneNumber || '';
+    state.uuid = result.uuid || '';
+    state.favorites = result.favorite || [];
+    // state.carts = result.carts.carts || [];
+    state.isAdmin = result.isAdmin || null;
+    state.api.status = 'success' || null;
+};
 
 const userSlice = createSlice({
     name: 'user',
     initialState: {
+        uuid: '',
         name: '',
         phoneNumber: '',
-        farvoriteList: [],
-        isAdmin: '',
+        favorites: [],
+        isAdmin: null,
         api: {
             message: '',
             status: '',
         },
     },
-    reducers: {},
+    reducers: {
+        renewApiStatus(state, action) {
+            state.api = {
+                message: '',
+                status: '',
+            };
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(register.pending, () => {})
 
             .addCase(register.fulfilled, (state, action) => {
                 const result = action.payload;
-                const status = result.split(' ')[0];
-                const message = result.replace(status, '').trim();
-                if (parseInt(status)) {
+                if (result.error) {
                     state.api.status = 'fail';
-                    state.api.message = message;
+                    state.api.message = result.error;
                 } else state.api.status = 'success';
             })
 
             .addCase(login.fulfilled, (state, action) => {
                 const result = action.payload;
 
-                const isFail = checkFailMessage(result);
-                if (isFail) {
+                if (result.error) {
                     state.api.status = 'fail';
-                    state.api.message = isFail;
+                    state.api.message = result.error;
                 } else {
-                    state.name = result.name;
-                    state.phoneNumber = result.phoneNumber;
-                    state.isAdmin = result.isAdmin;
-                    state.api.status = 'success';
+                    setUserState(state, result);
                 }
             })
 
             .addCase(getInforByToken.fulfilled, (state, action) => {
                 const result = action.payload;
-                const isFail = checkFailMessage(result);
-                if (!isFail) {
-                    state.name = result.name;
-                    state.phoneNumber = result.phoneNumber;
-                    state.isAdmin = result.isAdmin;
-                    state.api.status = 'success';
+                if (!result.error) {
+                    setUserState(state, result);
+                }
+            })
+
+            .addCase(logOut.fulfilled, (state, action) => {
+                const result = action.payload;
+                if (!result.error) {
+                    setUserState(state);
+                }
+            })
+
+            .addCase(addFavor.fulfilled, (state, action) => {
+                const result = action.payload.result;
+                if (!result.error) {
+                    state.favorites = [...state.favorites, action.payload.data.productId];
+                }
+            })
+
+            .addCase(removeFavor.fulfilled, (state, action) => {
+                const result = action.payload.result;
+                if (!result.error) {
+                    state.favorites = state.favorites.filter((favor) => favor !== action.payload.data.productId);
                 }
             });
     },
-});
-
-export const login = createAsyncThunk('user/login', async (payload, { dispatch }) => {
-    const result = await authService.login(payload);
-
-    return result;
-});
-
-export const getInforByToken = createAsyncThunk('user/getInforByToken', async (payload, { dispatch }) => {
-    const result = await userService.getInforByToken(payload);
-
-    return result;
-});
-
-export const register = createAsyncThunk('user/register', async (payload, { dispatch }) => {
-    const message = await userService.register(payload);
-
-    return message;
 });
 
 export default userSlice;
