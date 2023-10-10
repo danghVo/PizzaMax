@@ -21,6 +21,8 @@ module.exports = (sequelize, DataTypes) => {
                 ...detail,
                 productId: undefined,
                 cartUUID: undefined,
+                price: parseInt(detail.price),
+                quantity: parseInt(detail.quantity),
             };
         }
     }
@@ -40,6 +42,13 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 defaultValue: 1,
                 allowNull: false,
+            },
+            price: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            saleOff: {
+                type: DataTypes.INTEGER,
             },
         },
         {

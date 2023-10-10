@@ -32,13 +32,11 @@ class SectionService extends Service {
         return await sectionService.find(
             { name },
             {
-                include: {
-                    model: Product,
-                    through: {
-                        model: sectionService.juncModel,
-                        where: {
-                            productId: product.getDataValue('id'),
-                        },
+                model: Product,
+                through: {
+                    model: sectionService.juncModel,
+                    where: {
+                        productId: product.getDataValue('id'),
                     },
                 },
             },

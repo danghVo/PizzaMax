@@ -14,7 +14,7 @@ class UserController extends Controller {
             res.locals.user = userExist;
             next();
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -28,7 +28,7 @@ class UserController extends Controller {
 
             next();
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -43,7 +43,7 @@ class UserController extends Controller {
 
             return res.json(userInfor);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -53,7 +53,7 @@ class UserController extends Controller {
 
             return res.status(200).send('User was created successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -71,7 +71,7 @@ class UserController extends Controller {
 
             res.status(200).send('Update successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -83,7 +83,7 @@ class UserController extends Controller {
 
             res.status(200).send('Change password successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 }

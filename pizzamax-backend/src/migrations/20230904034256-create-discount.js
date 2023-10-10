@@ -13,14 +13,13 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.INTEGER,
             },
-            timeId: {
+            startAt: {
                 allowNull: false,
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'Times',
-                    key: 'id',
-                    as: 'timeId',
-                },
+                type: Sequelize.DATE,
+            },
+            endAt: {
+                allowNull: false,
+                type: Sequelize.DATE,
             },
             createdAt: {
                 allowNull: false,

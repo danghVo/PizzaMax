@@ -18,7 +18,7 @@ module.exports = {
                     as: 'userId',
                 },
             },
-            deliveryCharges: {
+            deliveryCharge: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },

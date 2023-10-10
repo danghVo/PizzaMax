@@ -35,7 +35,7 @@ class UserService extends Service {
     async getUserInfor(user) {
         const favorite = await user.getProducts({ include: [Type] });
         const address = await user.getAddresses({ include: City });
-        let carts = await CartService.getCartOfUser(user.id);
+        let carts = await CartService.getCartOfUser(user.getDataValue('id'));
 
         return {
             ...user.toJSON(),
@@ -65,7 +65,7 @@ class UserService extends Service {
             return throwError(409, 'Phone number have already existed');
         }
 
-        await this.model.create({ ...newUser, Carts: {} }, { include: [Cart] });
+        await this.model.create({ ...newUser, Carts: {} }, Cart);
     }
 
     async updateUser(user, payload) {

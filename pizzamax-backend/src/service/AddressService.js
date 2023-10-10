@@ -13,21 +13,28 @@ class AddressService extends Service {
         const address = {
             type,
             street: payload?.street,
+            district: payload?.district,
+            houseNumber: payload?.houseNumber,
         };
 
         Object.keys(address).forEach((key) => {
             address[key] || (mustFull ? throwError(400, `Missing ${key}`) : delete address[key]);
         });
 
-        return { ...address, description: payload.description || '' };
+        return { ...address, description: payload.description || '', alley: parseInt(payload.alley) || null };
     }
 
     async getAll() {
         return await this.getAll({ User, City });
     }
 
-    async getAllStore() {
-        const addresses = await this.getAllBy({ type: 'store' }, { City });
+    async getAllAddressOfUser(user) {
+        return await this.getAllBy({ userId: user.id }, [City]);
+    }
+
+    async getAllShop() {
+        const addresses = await this.getAllBy({ type: 'store' }, [City]);
+
         return addresses;
     }
 
@@ -41,8 +48,8 @@ class AddressService extends Service {
 
         const address = {
             ...addressForm,
-            userId: user === 'admin' ? 1 : user.getDataValue('id'),
-            cityId: city.getDataValue('id'),
+            userId: user === 'admin' ? 1 : user.id,
+            cityId: city.id,
         };
 
         const addressExist = await this.find(address);
@@ -55,8 +62,8 @@ class AddressService extends Service {
 
         if (address) {
             const city = await CityService.find({ name: payload.city });
-            const addressForm = this.form(payload, false, address.getDataValue('type'));
-            return await this.update({ id: addressId }, { ...addressForm, cityId: city.getDataValue('id') });
+            const addressForm = this.form(payload, false, address.type);
+            return await this.update({ id: addressId }, { ...addressForm, cityId: city.id });
         } else throwError(404, 'Not found Address');
     }
 

@@ -16,39 +16,44 @@ class CartController extends Controller {
             res.locals.cart = cart;
             next();
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
     async addToCart(req, res) {
         try {
             const cart = res.locals.cart;
+            const newCart = await CartService.addToCart(cart, req.body);
 
-            await CartService.addToCart(cart, req.body);
-
-            return res.send('Add product successfully');
+            return res.json(newCart);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
     async removeFromCart(req, res) {
         try {
-            await CartService.removeFromCart(req.body);
+            const cart = res.locals.cart;
+            const detailUUID = req.params.detailUUID;
 
-            return res.send('Remove product successfully');
+            const newCart = await CartService.removeFromCart(cart, detailUUID);
+
+            return res.json(newCart);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
     async updateProduct(req, res) {
         try {
-            await CartService.updateProduct(req.body);
+            const cart = res.locals.cart;
+            const detailUUID = req.params.detailUUID;
 
-            return res.send('Update product successfully');
+            const newCart = await CartService.updateProduct(cart, detailUUID, req.body);
+
+            return res.json(newCart);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -60,7 +65,7 @@ class CartController extends Controller {
 
             return res.send(message);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 }

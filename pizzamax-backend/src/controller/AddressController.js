@@ -12,21 +12,32 @@ class AddressController {
 
             return res.json(addresses);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async getAllStore(req, res) {
+    async getAllShop(req, res) {
         try {
-            const addresses = await AddressService.getAllStore();
+            const addresses = await AddressService.getAllShop();
 
             return res.json(addresses);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async newAddress(req, res) {
+    async getAddressesOfUser(req, res) {
+        try {
+            const user = res.locals.user;
+            const addresses = await AddressService.getAllAddressOfUser(user);
+
+            return res.json(addresses);
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
+    async addAddress(req, res) {
         try {
             const user = res.locals.user || 'admin';
 
@@ -34,7 +45,7 @@ class AddressController {
 
             return res.json(address);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -46,7 +57,7 @@ class AddressController {
 
             res.json(address);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -58,7 +69,7 @@ class AddressController {
 
             res.status(200).send('Deleted address successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 }

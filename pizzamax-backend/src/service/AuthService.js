@@ -30,8 +30,8 @@ class AuthService extends Service {
         return userStorage.token;
     }
 
-    async deleteToken(user) {
-        return await UserService.update(user, { token: null });
+    async deleteToken(refeshToken) {
+        return await UserService.update({ token: refeshToken }, { token: null });
     }
 }
 

@@ -10,9 +10,7 @@ class DetailService extends Service {
     async checkDetailExist(product, cart, selections) {
         const detailCheck = await this.getAllBy(
             { productId: product.getDataValue('id'), cartUUID: cart.getDataValue('uuid') },
-            {
-                include: Selection,
-            },
+            [Selection],
         );
         const selectionName = selections.map((selection) => selection.name);
 

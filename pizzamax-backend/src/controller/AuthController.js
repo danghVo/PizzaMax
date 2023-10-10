@@ -20,7 +20,7 @@ class AuthController {
                 throwError(401, 'wrong password');
             }
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -35,7 +35,7 @@ class AuthController {
             const refreshToken = generateToken(
                 { phoneNumber: user.phoneNumber, password: user.password },
                 process.env.REFRESH_TOKEN_SECRET,
-                '',
+                '1d',
             );
 
             await AuthService.setToken(
@@ -58,7 +58,7 @@ class AuthController {
                 password: undefined,
             });
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -71,7 +71,7 @@ class AuthController {
             }
 
             jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
-                if (error) throwError(403, 'Dont have right to access');
+                if (error) throwError(403, 'Session expired');
                 const accessToken = generateToken(
                     { phoneNumber: decoded.phoneNumber, password: decoded.password },
                     decoded.phoneNumber == '0000000000'
@@ -89,21 +89,22 @@ class AuthController {
                 );
             });
 
-            // return res.send();
+            return res.send();
         } catch (error) {
-            res.status(error.status || 500).send(error.message || error);
+            res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
     async deleteToken(req, res) {
         try {
-            const user = { phoneNumber: req.body.phoneNumber, password: req.body.password };
+            const { refreshToken } = req.cookies['token'];
 
-            await AuthService.deleteToken(user);
+            await AuthService.deleteToken(refreshToken);
 
+            res.cookie('token', undefined);
             return res.send('Log out');
         } catch (error) {
-            res.status(error.status || 500).send(error.message || error);
+            res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 }

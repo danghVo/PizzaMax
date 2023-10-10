@@ -34,8 +34,19 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
+            district: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
             desciption: {
                 type: Sequelize.STRING,
+            },
+            alley: {
+                type: Sequelize.INTEGER,
+            },
+            houseNumber: {
+                type: Sequelize.STRING,
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,

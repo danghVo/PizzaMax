@@ -1,5 +1,6 @@
 'use strict';
 const { Model, UUIDV4 } = require('sequelize');
+const uniqueValue = require('../utils/uniqueValue');
 
 module.exports = (sequelize, DataTypes) => {
     class Product extends Model {
@@ -44,23 +45,29 @@ module.exports = (sequelize, DataTypes) => {
             const flavor = product.Flavors || [];
             const drink = product.Drinks || [];
 
-            let sections = [
-                ...size.map((item) => item.getDataValue('ProductSize').section),
-                ...crust.map((item) => item.getDataValue('ProductCrust').section),
-                ...flavor.map((item) => item.getDataValue('ProductFlavor').section),
-                ...drink.map((item) => item.getDataValue('ProductDrink').section),
-            ].reduce((accu, curr) => (accu.includes(curr) ? [...accu] : [...accu, curr]), []);
+            const sizeSections = uniqueValue(size.map((item) => item.getDataValue('ProductSize').section));
+            const crustSections = uniqueValue(crust.map((item) => item.getDataValue('ProductCrust').section));
+            const flavorSections = uniqueValue(flavor.map((item) => item.getDataValue('ProductFlavor').section));
+            const drinkSections = uniqueValue(drink.map((item) => item.getDataValue('ProductDrink').section));
 
+            let sections = [
+                ...sizeSections.map((item) => ({ name: item, type: 'size' })),
+                ...crustSections.map((item) => ({ name: item, type: 'crust' })),
+                ...flavorSections.map((item) => ({ name: item, type: 'flavor' })),
+                ...drinkSections.map((item) => ({ name: item, type: 'drink' })),
+            ];
             const discOptions =
                 sections.length > 0
                     ? sections.map((section) => {
                           return {
-                              name: section,
+                              ...section,
                               subOptions: [
-                                  ...size.filter((item) => item.getDataValue('ProductSize').section === section),
-                                  ...flavor.filter((item) => item.getDataValue('ProductFlavor').section === section),
-                                  ...crust.filter((item) => item.getDataValue('ProductCrust').section === section),
-                                  ...drink.filter((item) => item.getDataValue('ProductDrink').section === section),
+                                  ...size.filter((item) => item.getDataValue('ProductSize').section === section.name),
+                                  ...flavor.filter(
+                                      (item) => item.getDataValue('ProductFlavor').section === section.name,
+                                  ),
+                                  ...crust.filter((item) => item.getDataValue('ProductCrust').section === section.name),
+                                  ...drink.filter((item) => item.getDataValue('ProductDrink').section === section.name),
                               ],
                           };
                       })
@@ -70,13 +77,13 @@ module.exports = (sequelize, DataTypes) => {
                 ...product,
                 DiscountId: undefined,
                 TypeId: undefined,
-                typeId: undefined,
-                Type: undefined,
                 Sizes: undefined,
                 Flavors: undefined,
                 Crusts: undefined,
-                type: product.Type.name,
-                discount: product.Discount || undefined,
+                Detail: undefined,
+                Drinks: undefined,
+                detail: product?.Detail,
+                type: product?.Type.name || undefined,
                 discOptions,
                 price: parseInt(product.price.split('.').join('')),
             };
