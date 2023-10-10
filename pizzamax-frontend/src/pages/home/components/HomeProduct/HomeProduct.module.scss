@@ -67,6 +67,10 @@
     width: 26px;
     height: 26px;
     padding: 0px;
+
+    .favorite {
+        fill: red;
+    }
 }
 
 .product-price {
@@ -79,6 +83,12 @@
     font-weight: 500;
     line-height: 26px;
     margin: 0 12px 8px;
+}
+
+.product-price:has(.price-saleOff) .price {
+    text-decoration: line-through;
+    opacity: 0.5;
+    margin-right: 8px;
 }
 
 .product-btn {

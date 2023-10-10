@@ -1,5 +1,7 @@
-export const checkFailMessage = (respone) => {
-    if (typeof respone !== 'string') return null;
+const checkFailMessage = (respone) => {
+    if (typeof respone !== 'string') return false;
 
     return respone;
 };
+
+export default checkFailMessage;

@@ -23,3 +23,9 @@ export const refreshToken = async (payload, option = {}) => {
 
     return failMessage;
 };
+
+export const logOut = async (payload, option = {}) => {
+    const res = await httpRequest.get(path + 'logout');
+
+    return res;
+};

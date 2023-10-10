@@ -11,27 +11,43 @@ const httpRequest = axios.create({
 // });
 
 httpRequest.interceptors.response.use(
-    (respone) => respone,
+    (respone) => {
+        return respone;
+    },
     async (error) => {
-        if (error.response.data === 'jwt expired') {
+        if (error.response.data.error === 'jwt expired') {
             await httpRequest.get('/auth/refreshToken');
             const prevRequest = error?.config;
             prevRequest.sent = true;
             return await httpRequest(prevRequest);
+        } else if (error.response.data.error === 'Session expired') {
+            return await httpRequest.get('/auth/logout');
         }
 
-        return Promise.reject(error);
+        return Promise.resolve(error).then((error) => error.response);
     },
 );
 
 export const get = async (path, option = {}) => {
-    const respone = await httpRequest.get(path, option);
+    const response = await httpRequest.get(path, option);
 
-    return respone.data;
+    return response.data;
 };
 
 export const post = async (path, payload, option = {}) => {
-    const respone = await httpRequest.post(path, payload, option);
+    const response = await httpRequest.post(path, payload, option);
 
-    return respone.data;
+    return response.data;
+};
+
+export const patch = async (path, payload, option = {}) => {
+    const response = await httpRequest.patch(path, payload, option);
+
+    return response.data;
+};
+
+export const destroy = async (path, option = {}) => {
+    const response = await httpRequest.delete(path, option);
+
+    return response.data;
 };

@@ -7,7 +7,8 @@ import HomeProduct from '../HomeProduct';
 import styles from './Content.module.scss';
 import * as Icons from '~/components/Icons';
 import { useDebounce } from '~/hooks';
-import { productsSlice, fetchProducts, productsSelector } from '~/store/products';
+import { productsSlice, productThunk, productsSelector } from '~/store/products';
+import { userSelector } from '~/store/user';
 
 const cs = classNames.bind(styles);
 
@@ -17,11 +18,12 @@ function Content() {
     const dispatch = useDispatch();
 
     const products = useSelector(productsSelector.productsShow) || [];
+    const favorites = useSelector(userSelector.favorites);
 
     const debounceSearch = useDebounce(searchText, 500);
 
     useEffect(() => {
-        dispatch(fetchProducts());
+        dispatch(productThunk.fetchProducts());
     }, []);
 
     useEffect(() => {
@@ -54,7 +56,11 @@ function Content() {
                                 <h3 className={cs('product-type')}>{item.type}</h3>
                                 <div className="grid-cols-3 grid -mx-4">
                                     {item.products.map((product, index) => (
-                                        <HomeProduct key={index} data={product} />
+                                        <HomeProduct
+                                            key={index}
+                                            favorite={favorites.includes(product.id)}
+                                            data={product}
+                                        />
                                     ))}
                                 </div>
                             </div>

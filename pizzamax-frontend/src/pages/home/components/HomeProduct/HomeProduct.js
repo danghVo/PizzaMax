@@ -1,117 +1,199 @@
 import classNames from 'classnames/bind';
-import ReactDOM from 'react-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 
 import styles from './HomeProduct.module.scss';
 import * as Icons from '~/components/Icons';
 import Button from '~/components/Button';
 import Modal from '~/components/Modal';
 import Message from './Components/Message';
-import { cartSlice, cartSelector } from '~/store/cart';
+import { cartSlice, cartSelector, cartThunk } from '~/store/cart';
+import { userThunk } from '~/store/user';
+import Image from '~/components/Image';
+import { checkDiscountAvail } from '~/utils';
 
 const cs = classNames.bind(styles);
 
-function HomeProduct({ data }) {
+function HomeProduct({ data, favorite }) {
     const [openModal, setOpenModal] = useState(false);
-    const [openCartSection, setOpenCartSection] = useState(false);
     const [isMessage, setMessage] = useState(false);
+    const [quantity, setQuantity] = useState(1);
+    const [price, setPrice] = useState(data.price);
     const [warnings, setWarnings] = useState(
         data.discOptions.map(() => ({
             isWarning: false,
         })) || [],
     );
 
-    const modalRef = useRef();
+    const [selection, setSelection] = useState(
+        data.discOptions?.map(() => ({ section: '', name: '', type: '', price: 0, indexSelection: -1 })) || null,
+    );
 
     const dispatch = useDispatch();
-    const cartStore = useSelector(cartSelector.currentProducts);
-    const product = cartStore.find((item) => item.name === data.name) || {};
-    const selection =
-        product.discOptions ||
-        data.discOptions?.map((item) => ({ title: item.name, nameSelection: '', indexSelection: -1 })) ||
-        [];
+    const cartStore = useSelector(cartSelector.cart);
+    const productInStore = cartStore.products.find((item) => item.name === data.name) || null;
+
+    let isDiscountAvailable = checkDiscountAvail(data.Discount);
+    let saleOff = isDiscountAvailable ? data.Discount.saleOff : 0;
+
+    useEffect(() => {
+        if (productInStore) {
+            setPrice(productInStore.detail.price);
+            setQuantity(productInStore.detail.quantity);
+            setSelection(
+                productInStore.Selection.map((item) => {
+                    let indexSelection;
+                    data.discOptions.find((discOption) => {
+                        if (discOption.type === item.type) {
+                            indexSelection = discOption.subOptions.findIndex(
+                                (subOption) => subOption.name === item.name,
+                            );
+
+                            return true;
+                        }
+                        return false;
+                    });
+
+                    return {
+                        name: item.name,
+                        price: item.price,
+                        section: item.section,
+                        type: item.price,
+                        indexSelection,
+                    };
+                }),
+            );
+        } else {
+            setQuantity(1);
+            setPrice(data.price);
+            setSelection(
+                data.discOptions?.map(() => ({ section: '', name: '', type: '', price: 0, indexSelection: -1 })) ||
+                    null,
+            );
+        }
+    }, [productInStore]);
+
+    useEffect(() => {
+        if (!productInStore)
+            setPrice(
+                selection.reduce((accu, current) => (current.price ? accu + current.price : accu), data.price) *
+                    quantity,
+            );
+    }, [selection]);
 
     const handleCloseModal = () => {
-        if (selection.find((item) => item.indexSelection === -1)) {
-            decreaseQuantity();
-        }
         setOpenModal(false);
     };
 
-    const handleAddToCart = () => {
-        if (openModal) {
-            if (
-                selection.filter((item, index) => {
-                    if (item.indexSelection === -1) {
-                        setWarnings((prev) =>
-                            prev.map((warning, warningIndex) =>
-                                warningIndex === index ? (warning.isWarning = true && warning) : warning,
-                            ),
-                        );
-                        return true;
-                    }
-                    return false;
-                }).length === 0
-            ) {
-                modalRef.current.closeModal();
-                setMessage(true);
-                return;
-            }
+    const checkSelectionChoosen = () => {
+        return (
+            selection.filter((item, index) => {
+                if (item.indexSelection === -1) {
+                    setWarnings((prev) =>
+                        prev.map((warning, warningIndex) =>
+                            warningIndex === index ? (warning.isWarning = true && warning) : warning,
+                        ),
+                    );
+                    return true;
+                }
+                return false;
+            }).length === 0
+        );
+    };
+
+    const handleAddToCartModal = () => {
+        if (productInStore) {
+            setOpenModal(false);
+            setMessage(true);
+            return;
         }
+
+        if (checkSelectionChoosen()) {
+            handleCloseModal();
+            setMessage(true);
+
+            dispatch(
+                cartThunk.addToCart({
+                    name: data.name,
+                    selection,
+                    quantity: quantity,
+                }),
+            );
+        }
+    };
+
+    const handleAddToCart = () => {
         if (data.discOptions.length > 0 && !openModal) {
             setOpenModal(true);
+        } else {
+            dispatch(
+                cartThunk.addToCart({
+                    name: data.name,
+                    selection,
+                    quantity: quantity,
+                }),
+            );
         }
-
-        setOpenCartSection(true);
-
-        dispatch(
-            cartSlice.actions.addToCart({
-                ...data,
-                discOptions: selection,
-                quantity: product.quantity || 1,
-            }),
-        );
     };
 
     const increaseQuantity = () => {
         if (data.discOptions.length > 0 && !openModal) {
             setOpenModal(true);
-            if (product.quantity) return;
-        }
-
-        dispatch(cartSlice.actions.increment(product));
+        } else dispatch(cartThunk.increase(productInStore));
 
         if (!openModal) setMessage(true);
     };
 
-    const decreaseQuantity = () => {
-        if (product.quantity === 1) {
-            if (openModal) setOpenModal(false);
-            setOpenCartSection(false);
-        }
-
-        dispatch(cartSlice.actions.decrement(product));
+    const increaseQuantityModal = () => {
+        if (!productInStore) {
+            dispatch(
+                cartThunk.addToCart({
+                    name: data.name,
+                    selection,
+                    quantity: quantity + 1,
+                }),
+            );
+        } else dispatch(cartThunk.increase(productInStore));
     };
 
-    const handelSelectOption = (subOption, title, selectionIndex, subOptionIndex) => {
+    const decreaseQuantity = () => {
+        if (quantity === 1) {
+            if (productInStore) dispatch(cartThunk.removeFromCart(productInStore));
+
+            if (openModal) setOpenModal(false);
+        } else {
+            dispatch(cartThunk.decrease(productInStore));
+        }
+    };
+
+    const handelSelectOption = (subOption, section, type, selectionIndex, subOptionIndex) => {
         setWarnings((prev) => {
             prev[selectionIndex].isWarning = false;
             return [...prev];
         });
-        dispatch(
-            cartSlice.actions.chooseSelection({
-                name: product.name,
-                indexOption: selectionIndex,
-                selection: {
-                    title,
-                    price: subOption.price,
-                    nameSelection: subOption.name,
-                    indexSelection: subOptionIndex,
-                },
-            }),
-        );
+
+        setSelection((prev) => {
+            prev[selectionIndex] = {
+                section,
+                type,
+                price: subOption.price,
+                name: subOption.name,
+                indexSelection: subOptionIndex,
+            };
+
+            return [...prev];
+        });
+    };
+
+    const handleFavorite = () => {
+        const payload = {
+            productId: data.id,
+        };
+
+        if (favorite) {
+            dispatch(userThunk.removeFavor(payload));
+        } else dispatch(userThunk.addFavor(payload));
     };
 
     const actionsCartElement = (
@@ -128,9 +210,9 @@ function HomeProduct({ data }) {
             />
 
             {openModal ? (
-                <input onChange={() => {}} className={cs('modal-cart-quantity')} value={product.quantity} />
+                <input onChange={() => {}} className={cs('modal-cart-quantity')} value={quantity} />
             ) : (
-                <div className={cs('product-cart-quantity')}>{product.quantity}</div>
+                <div className={cs('product-cart-quantity')}>{quantity}</div>
             )}
 
             <Button
@@ -140,7 +222,7 @@ function HomeProduct({ data }) {
                 type="icon"
                 size="small"
                 animation
-                handleClick={increaseQuantity}
+                handleClick={openModal ? increaseQuantityModal : increaseQuantity}
                 icon={<Icons.plus />}
             />
         </>
@@ -151,7 +233,7 @@ function HomeProduct({ data }) {
             className={cs('product-btn', { 'modal-btn': openModal })}
             hover
             animation
-            handleClick={handleAddToCart}
+            handleClick={openModal ? handleAddToCartModal : handleAddToCart}
             theme="primary"
             size="small"
             icon={!openModal && <Icons.cart width="1.8rem" height="1.8rem" />}
@@ -164,27 +246,45 @@ function HomeProduct({ data }) {
         <>
             <div className={cs('product-wrapper')}>
                 <div className={cs('product-inner')}>
-                    <img className={cs('product-img')} src={data.image} alt="" />
-                    {data.discount && <div className={cs('product-saleOff')}>{data.discount} OFF</div>}
+                    <Image className={cs('product-img')} src={data.image} alt="" />
+                    {data.Discount && isDiscountAvailable && (
+                        <div className={cs('product-saleOff')}>{data.Discount.saleOff}% OFF</div>
+                    )}
                     <div className={cs('product-infor')}>
                         <div className={cs('product-content')}>
                             <h4 className={cs('product-name')}>{data.name}</h4>
                             <p className={cs('product-description')}>{data.description}</p>
                         </div>
 
-                        <Button className={cs('product-heart')} icon={<Icons.heart />} type="icon" theme="default" />
+                        <Button
+                            className={cs('product-heart')}
+                            icon={favorite ? <Icons.heartFull /> : <Icons.heart />}
+                            type="icon"
+                            theme="default"
+                            handleClick={handleFavorite}
+                        />
                     </div>
 
                     <div className={cs('product-price')}>
-                        {data.price
-                            ? data.price.toLocaleString('vi-VN', {
-                                  style: 'currency',
-                                  currency: 'VND',
-                              })
-                            : 'Choose to see detail price'}
+                        <span className={cs('price')}>
+                            {price
+                                ? price.toLocaleString('vi-VN', {
+                                      style: 'currency',
+                                      currency: 'VND',
+                                  })
+                                : 'Choose to see detail price'}
+                        </span>
+                        {isDiscountAvailable && price && (
+                            <span className={cs('price-saleOff')}>
+                                {(price - (price * saleOff) / 100).toLocaleString('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND',
+                                })}
+                            </span>
+                        )}
                     </div>
 
-                    {openCartSection && product.quantity ? (
+                    {productInStore && quantity ? (
                         <div className={cs('product-cart')}>{actionsCartElement}</div>
                     ) : (
                         addToCartBtn
@@ -195,7 +295,7 @@ function HomeProduct({ data }) {
             {!openModal && <Message isMessage={isMessage} setMessage={setMessage} />}
 
             {openModal && data.discOptions && (
-                <Modal ref={modalRef} className={cs('modal-wrapper')} onClose={handleCloseModal}>
+                <Modal className={cs('modal-wrapper')} onClose={handleCloseModal}>
                     <div className={cs('modal-img-wrapper')}>
                         <img src={data.image} className={cs('modal-img')} alt={data.name} />
                         <div className={cs('modal-img-infor')}>
@@ -231,6 +331,7 @@ function HomeProduct({ data }) {
                                                             handelSelectOption(
                                                                 subOption,
                                                                 item.name,
+                                                                item.type,
                                                                 index,
                                                                 subOptionIndex,
                                                             )
@@ -288,7 +389,7 @@ function HomeProduct({ data }) {
                             <div className={cs('modal-cart')}>{actionsCartElement}</div>
 
                             <div className={cs('modal-price')}>
-                                {(product.price * product.quantity).toLocaleString('vi-VN', {
+                                {price.toLocaleString('vi-VN', {
                                     style: 'currency',
                                     currency: 'VND',
                                 })}
