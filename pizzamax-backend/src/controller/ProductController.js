@@ -15,7 +15,7 @@ class ProductController extends Controller {
                 return res.json(productList);
             } else throwError(404, 'Nothing to show');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -29,7 +29,7 @@ class ProductController extends Controller {
 
             return res.json(product);
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -41,7 +41,7 @@ class ProductController extends Controller {
 
             return res.send('Product was created successfuly');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -54,7 +54,7 @@ class ProductController extends Controller {
 
             return res.send('Product was updated successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -66,7 +66,7 @@ class ProductController extends Controller {
 
             return res.send('Product was deleted successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -78,7 +78,7 @@ class ProductController extends Controller {
 
             return res.send('Product Section was deleted successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -91,7 +91,7 @@ class ProductController extends Controller {
 
             return res.send('Add favorite product successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -104,7 +104,7 @@ class ProductController extends Controller {
 
             return res.send('Revmove favorite product successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 }

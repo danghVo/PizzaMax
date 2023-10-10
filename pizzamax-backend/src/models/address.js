@@ -23,7 +23,7 @@ module.exports = (sequelize, DataTypes) => {
                 cityId: undefined,
                 CityId: undefined,
                 City: undefined,
-                // city: address?.City.name,
+                city: address.City?.name,
             };
         }
     }
@@ -33,7 +33,18 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.STRING,
                 allowNull: false,
             },
+            district: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
             street: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            alley: {
+                type: DataTypes.INTEGER,
+            },
+            houseNumber: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },

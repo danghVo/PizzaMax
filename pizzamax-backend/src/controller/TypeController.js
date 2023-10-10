@@ -13,7 +13,7 @@ class TypeController extends Controller {
             if (types) return res.json(types);
             else throwError(404, 'Nothing to show');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -23,7 +23,7 @@ class TypeController extends Controller {
 
             return res.send('Type is created successfuly');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -35,7 +35,7 @@ class TypeController extends Controller {
 
             return res.send('Type is updated successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
@@ -47,7 +47,7 @@ class TypeController extends Controller {
 
             return res.send('Type id deleted successfully');
         } catch (error) {
-            return res.status(error.status || 500).send(error.message || error);
+            return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 }

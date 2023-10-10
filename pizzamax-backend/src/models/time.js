@@ -13,10 +13,6 @@ module.exports = (sequelize, DataTypes) => {
             this.hasMany(models.Type, {
                 foreignKey: 'timeId',
             });
-
-            this.hasMany(models.Discount, {
-                foreignKey: 'timeId',
-            });
         }
     }
     Time.init(

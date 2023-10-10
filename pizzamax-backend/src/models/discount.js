@@ -11,14 +11,20 @@ module.exports = (sequelize, DataTypes) => {
             this.hasMany(models.Product, {
                 foreignKey: 'discountId',
             });
-
-            this.belongsTo(models.Time);
         }
     }
     Discount.init(
         {
-            saleoff: {
+            saleOff: {
                 type: DataTypes.INTEGER,
+                allowNull: false,
+            },
+            startAt: {
+                type: DataTypes.DATE,
+                allowNull: false,
+            },
+            endAt: {
+                type: DataTypes.DATE,
                 allowNull: false,
             },
         },

@@ -9,7 +9,8 @@ router.all('/user/:uuid/*', UserController.checkUser);
 router.patch('/user/:uuid/changePassword', UserController.changePassword);
 router.patch('/user/:uuid/update', UserController.updateUser);
 
-router.post('/user/:uuid/newAddress', AddressController.newAddress);
+router.get('/user/:uuid/getAllAddress', AddressController.getAddressesOfUser);
+router.post('/user/:uuid/addAddress', AddressController.addAddress);
 router.patch('/user/:uuid/editAddress/:addressId', AddressController.editAddress);
 router.delete('/user/:uuid/deleteAddress/:addressId', AddressController.deleteAddress);
 

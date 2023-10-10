@@ -1,15 +1,27 @@
 const Service = require('./Service');
-const { Cart, Detail, Product, Selection, Type, Status, Orderway, Address } = require('../models');
+const { Cart, Detail, Product, Selection, Type, Status, Orderway, Address, Discount } = require('../models');
 
 const throwError = require('../utils/throwError');
 const DetailService = require('./DetailService');
 const ProductService = require('./ProductService');
 const SectionService = require('./SectionService');
 const AddressService = require('./AddressService');
+const product = require('../models/product');
+const percentageOf = require('../utils/percentageOf');
+const checkDiscountAvail = require('../utils/checkDiscountAvail');
 
 class CartService extends Service {
     constructor() {
         super('CartService', Cart);
+    }
+
+    async updateCartPrice(cart, totalProductPrice, saleOff = 0) {
+        const currentSubTotal = parseInt(cart.subTotal);
+        const deliveryCharge = parseInt(cart.deliveryCharge);
+        const newSubTotal = currentSubTotal + totalProductPrice - percentageOf(totalProductPrice, saleOff);
+        const total = newSubTotal === 0 ? 0 : newSubTotal + deliveryCharge;
+
+        await this.update({ uuid: cart.uuid }, { subTotal: newSubTotal, total });
     }
 
     async getCartOfUser(userId) {
@@ -21,7 +33,7 @@ class CartService extends Service {
                 Address,
                 {
                     model: Product,
-                    include: [Type],
+                    include: [Type, Discount],
                     through: {
                         model: Detail,
                     },
@@ -30,80 +42,128 @@ class CartService extends Service {
         });
         let currentCart;
 
-        if (carts)
+        if (carts.length > 0) {
             for (const i in carts) {
-                const products = carts[i].getDataValue('Products');
-                for (const j in products) {
-                    carts[i].Products[j].dataValues.Selection = await products[j]
-                        .getDataValue('Detail')
-                        .getSelections();
-
-                    carts[i].Products[j].dataValues.image = await ProductService.getImageProduct(products[j]);
-                }
+                carts[i] = await this.getCartDetail(carts[i]);
             }
-
-        const lastCartStatus = carts[carts.length - 1].getDataValue('statusId');
-        if (carts && (lastCartStatus == 2 || lastCartStatus == 1)) {
-            currentCart = carts[carts.length - 1];
+            const lastCartStatus = carts[carts.length - 1].statusId;
+            if (carts && (lastCartStatus == 2 || lastCartStatus == 1)) {
+                currentCart = carts[carts.length - 1];
+            }
         } else currentCart = this.model.create({ userId });
 
         return { carts, currentCart };
     }
 
     async getCart(cartUUID) {
-        const cartExist = await this.find({ uuid: cartUUID });
+        const cartExist = await this.find(
+            { uuid: cartUUID },
+            {
+                model: Product,
+                include: [Type, Discount],
+                through: {
+                    model: Detail,
+                },
+            },
+        );
 
-        return cartExist || throwError(404, 'Cart not exist');
+        if (cartExist) {
+            return await this.getCartDetail(cartExist);
+        } else throwError(404, 'Cart not exist');
+    }
+
+    async getCartDetail(cart) {
+        const products = cart.Products;
+
+        for (const productIndex in products) {
+            const detail = await products[productIndex].Detail;
+            const selections = await detail.getSelections();
+            cart.dataValues.Products[productIndex].dataValues.Selection = await selections;
+
+            cart.dataValues.Products[productIndex].dataValues.image = await ProductService.getImageProduct(
+                products[productIndex],
+            );
+        }
+
+        return cart;
     }
 
     async addToCart(cart, payload) {
         const { name, quantity, selection } = payload;
 
         const product = await ProductService.find({ name });
+        if (!product) {
+            throwError(404, 'Product not found');
+        }
 
         const checkDetail = await DetailService.checkDetailExist(product, cart, selection);
+        const discount = await product.getDiscount();
+        const saleOff = checkDiscountAvail(discount) ? discount.saleOff : null;
 
         if (checkDetail) {
             return throwError(409, 'Product is already in cart');
         }
+        let totalProductPrice = parseInt(product.price);
 
         const detail = await Detail.create({
-            quantity: quantity || 1,
-            cartUUID: cart.getDataValue('uuid'),
-            productId: product.getDataValue('id'),
+            quantity: quantity,
+            cartUUID: cart.uuid,
+            productId: product.id,
+            saleOff: saleOff,
+            price: '',
         });
 
-        for await (const item of selection) {
-            const type = await SectionService.getSection(item.type, item.name, product);
-            if (type) {
-                await Selection.create({
-                    detailUUID: detail.getDataValue('uuid'),
-                    price: type.getDataValue('price'),
-                    name: type.getDataValue('name'),
-                    section: item.section,
-                    type: item.type,
-                });
-            } else throwError(404, 'Not have this section');
-        }
+        if (selection.length > 0)
+            for await (const item of selection) {
+                const type = await SectionService.getSection(item.type, item.name, product);
+                if (type) {
+                    totalProductPrice += parseInt(type.price);
+                    await Selection.create({
+                        detailUUID: detail.uuid,
+                        price: type.price,
+                        name: type.name,
+                        section: item.section,
+                        type: item.type,
+                    });
+                } else throwError(404, 'Not have this section');
+            }
+
+        await DetailService.update({ uuid: detail.uuid }, { price: totalProductPrice * parseInt(quantity) });
+
+        await this.updateCartPrice(cart, totalProductPrice * quantity, saleOff);
+        return await this.getCart(cart.uuid);
     }
 
-    async removeFromCart(payload) {
-        const detailUUID = payload.detailUUID;
+    async removeFromCart(cart, detailUUID) {
         const detailExist = await DetailService.find({ uuid: detailUUID });
 
         if (detailExist) {
-            await DetailService.delete({ uuid: detailUUID }, { include: [Selection] });
+            await this.updateCartPrice(cart, -parseInt(detailExist.price), detailExist.saleOff);
+            await DetailService.delete({ uuid: detailUUID }, Selection);
+
+            return await this.getCart(cart.uuid);
         } else {
             throwError(404, 'Detail not found');
         }
     }
 
-    async updateProduct(payload) {
-        const detailUUID = payload.detailUUID;
+    async updateProduct(cart, detailUUID, payload) {
         const detailExist = await DetailService.find({ uuid: detailUUID });
 
         if (detailExist) {
-            await DetailService.update({ uuid: detailUUID }, { quantity: payload.quantity });
+            let pricePerOne = parseInt(detailExist.price) / parseInt(detailExist.quantity);
+            await this.updateCartPrice(
+                cart,
+                pricePerOne * (payload.quantity - parseInt(detailExist.quantity)),
+                detailExist.saleOff,
+            );
+
+            await DetailService.update(
+                { uuid: detailUUID },
+                { quantity: payload.quantity, price: pricePerOne * payload.quantity },
+            );
+
+            return await this.getCart(cart.uuid);
         } else {
             throwError(404, 'Detail not found');
         }
@@ -116,18 +176,16 @@ class CartService extends Service {
 
         if (orderwayExist && addressExist) {
             await this.update(
-                { uuid: cart.getDataValue('uuid') },
+                { uuid: cart.uuid },
                 {
-                    orderwayId: orderwayExist.getDataValue('id'),
+                    orderwayId: orderwayExist.id,
                     checkOutAt,
                     statusId: 2,
-                    addressId: addressExist.getDataValue('id'),
+                    addressId: addressExist.id,
                 },
             );
 
-            return orderwayExist.getDataValue('id') == 1
-                ? 'Please come to get your order'
-                : 'Waiting to get your order shipped';
+            return orderwayExist.id == 1 ? 'Please come to get your order' : 'Waiting to get your order shipped';
         } else throwError(400, 'Wrong information');
     }
 }

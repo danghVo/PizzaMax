@@ -3,7 +3,7 @@ const path = require('path');
 const throwError = require('../utils/throwError');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 
-const exceptions = ['/api/auth/', '/api/user/register', '/api/product/getAll', '/api/address/getAllShop'];
+const exceptions = ['/api/auth/', '/api/user/register', '/product/getAll', '/address/getAllShopAddress'];
 
 module.exports = function authenticate(req, res, next) {
     try {
@@ -34,6 +34,6 @@ module.exports = function authenticate(req, res, next) {
 
         return throwError(403, 'Dont have right to access');
     } catch (error) {
-        return res.status(error.status || 500).send(error.message || error);
+        return res.status(error.code || 500).send({ error: error.message || error });
     }
 };

@@ -17,27 +17,27 @@ class Service {
     }
 
     async getAllBy(filter, subModel = undefined) {
-        return await this.model.findAll({ where: filter }, subModel && { include: subModel });
+        return await this.model.findAll({ where: filter, include: subModel });
     }
 
-    async find(filter, include = {}) {
-        return await this.model.findOne({ where: filter }, include);
+    async find(filter, subModel = undefined) {
+        return await this.model.findOne({ where: filter, include: subModel });
     }
 
-    async findJunc(filter, include = {}) {
-        return await this.juncModel.findOne({ where: filter }, include);
+    async findJunc(filter, subModel = undefined) {
+        return await this.juncModel.findOne({ where: filter, include: subModel });
     }
 
-    async deleteJunc(filter, include) {
-        return await this.juncModel.destroy({ where: filter }, include);
+    async deleteJunc(filter, subModel = undefined) {
+        return await this.juncModel.destroy({ where: filter, include: subModel });
     }
 
-    async update(filter, update, include) {
-        return await this.model.update(update, { where: filter }, include);
+    async update(filter, update, subModel = undefined) {
+        return await this.model.update(update, { where: filter, include: subModel });
     }
 
-    async delete(filter, include = {}) {
-        return await this.model.destroy({ where: filter }, include);
+    async delete(filter, subModel = undefined) {
+        return await this.model.destroy({ where: filter, include: subModel });
     }
 }
 

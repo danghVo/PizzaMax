@@ -5,7 +5,7 @@ router.post('/login', [AuthController.login, UserController.getUserInfor, AuthCo
 
 router.get('/refreshToken', AuthController.refreshToken);
 
-router.post('/logout', AuthController.deleteToken);
+router.get('/logout', AuthController.deleteToken);
 
 module.exports.name = 'auth';
 module.exports.router = router;

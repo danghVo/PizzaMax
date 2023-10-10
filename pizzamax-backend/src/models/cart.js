@@ -36,8 +36,13 @@ module.exports = (sequelize, DataTypes) => {
                 AddressId: undefined,
                 addressId: undefined,
                 AddressId: undefined,
-                Orderway: cart.Orderways?.name || undefined,
-                status: cart.Status.name,
+                Products: undefined,
+                orderway: cart.Orderways?.name || undefined,
+                status: cart.Status?.name,
+                products: cart?.Products,
+                subTotal: parseInt(cart.subTotal),
+                total: parseInt(cart.total),
+                deliveryCharge: parseInt(cart.deliveryCharge),
             };
         }
     }
@@ -49,10 +54,10 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 defaultValue: DataTypes.UUIDV4,
             },
-            deliveryCharges: {
+            deliveryCharge: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                defaultValue: '15.000',
+                defaultValue: '15000',
             },
             subTotal: {
                 type: DataTypes.STRING,
