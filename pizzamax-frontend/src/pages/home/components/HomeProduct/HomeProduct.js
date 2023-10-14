@@ -1,53 +1,66 @@
 import classNames from 'classnames/bind';
 import { useDispatch, useSelector } from 'react-redux';
-import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import styles from './HomeProduct.module.scss';
 import * as Icons from '~/components/Icons';
 import Button from '~/components/Button';
-import Modal from '~/components/Modal';
 import Message from './Components/Message';
-import { cartSlice, cartSelector, cartThunk } from '~/store/cart';
+import { cartSelector, cartThunk } from '~/store/cart';
 import { userThunk } from '~/store/user';
 import Image from '~/components/Image';
 import { checkDiscountAvail } from '~/utils';
+import ProductModal from './Components/ProductModal/ProductModal';
+import SelectModal from './Components/SelectModal';
 
 const cs = classNames.bind(styles);
 
 function HomeProduct({ data, favorite }) {
-    const [openModal, setOpenModal] = useState(false);
+    const [openProductModal, setOpenProductModal] = useState(false);
+    const [openSelectModal, setOpenSelectModal] = useState(false);
     const [isMessage, setMessage] = useState(false);
     const [quantity, setQuantity] = useState(1);
     const [price, setPrice] = useState(data.price);
-    const [warnings, setWarnings] = useState(
-        data.discOptions.map(() => ({
-            isWarning: false,
-        })) || [],
-    );
-
+    const [productsInCart, setProductsInCart] = useState([]);
     const [selection, setSelection] = useState(
-        data.discOptions?.map(() => ({ section: '', name: '', type: '', price: 0, indexSelection: -1 })) || null,
+        data.discOptions?.reduce(
+            (accu, curr) => ({ ...accu, [curr.name]: { name: '', type: '', price: 0, indexSelection: -1 } }),
+            {},
+        ) || {},
     );
+    const [productSelected, setProductSelected] = useState(null);
+
+    const productModalRef = useRef({});
 
     const dispatch = useDispatch();
     const cartStore = useSelector(cartSelector.cart);
-    const productInStore = cartStore.products.find((item) => item.name === data.name) || null;
 
     let isDiscountAvailable = checkDiscountAvail(data.Discount);
     let saleOff = isDiscountAvailable ? data.Discount.saleOff : 0;
 
     useEffect(() => {
-        if (productInStore) {
-            setPrice(productInStore.detail.price);
-            setQuantity(productInStore.detail.quantity);
+        setProductsInCart(cartStore.products.filter((item) => item.name === data.name));
+    }, [cartStore]);
+
+    useEffect(() => {
+        if (productSelected) {
+            setProductSelected(productsInCart.find((product) => product.detail.uuid === productSelected.detail.uuid));
+        } else if (productsInCart.length > 0) {
+            setProductSelected(productsInCart[productsInCart.length - 1]);
+        } else setProductSelected(null);
+    }, [productsInCart]);
+
+    useEffect(() => {
+        if (productSelected) {
+            setPrice(productSelected.detail.price);
+            setQuantity(productSelected.detail.quantity);
             setSelection(
-                productInStore.Selection.map((item) => {
+                productSelected.Selection.reduce((accu, curr) => {
                     let indexSelection;
                     data.discOptions.find((discOption) => {
-                        if (discOption.type === item.type) {
+                        if (discOption.type === curr.type) {
                             indexSelection = discOption.subOptions.findIndex(
-                                (subOption) => subOption.name === item.name,
+                                (subOption) => subOption.name === curr.name,
                             );
 
                             return true;
@@ -56,97 +69,105 @@ function HomeProduct({ data, favorite }) {
                     });
 
                     return {
-                        name: item.name,
-                        price: item.price,
-                        section: item.section,
-                        type: item.price,
-                        indexSelection,
+                        ...accu,
+                        [curr.section]: {
+                            price: curr.price,
+                            name: curr.name,
+                            type: curr.price,
+                            indexSelection,
+                        },
                     };
-                }),
+                }, {}),
             );
         } else {
             setQuantity(1);
             setPrice(data.price);
             setSelection(
-                data.discOptions?.map(() => ({ section: '', name: '', type: '', price: 0, indexSelection: -1 })) ||
-                    null,
+                data.discOptions?.reduce(
+                    (accu, curr) => ({ ...accu, [curr.name]: { name: '', type: '', price: 0, indexSelection: -1 } }),
+                    {},
+                ) || {},
             );
         }
-    }, [productInStore]);
+    }, [productSelected]);
 
     useEffect(() => {
-        if (!productInStore)
+        if (!productSelected)
             setPrice(
-                selection.reduce((accu, current) => (current.price ? accu + current.price : accu), data.price) *
-                    quantity,
+                Object.keys(selection).reduce(
+                    (accu, currentSection) =>
+                        selection[currentSection].price ? accu + selection[currentSection].price : accu,
+                    data.price,
+                ) * quantity,
             );
     }, [selection]);
 
-    const handleCloseModal = () => {
-        setOpenModal(false);
+    useEffect(() => {
+        if (!openProductModal) {
+            setProductSelected(null);
+        }
+    }, [openProductModal]);
+
+    const handleCloseProductModal = () => {
+        setOpenProductModal(false);
     };
 
-    const checkSelectionChoosen = () => {
-        return (
-            selection.filter((item, index) => {
-                if (item.indexSelection === -1) {
-                    setWarnings((prev) =>
-                        prev.map((warning, warningIndex) =>
-                            warningIndex === index ? (warning.isWarning = true && warning) : warning,
-                        ),
-                    );
-                    return true;
-                }
-                return false;
-            }).length === 0
-        );
+    const handleChooseProduct = (product) => {
+        setProductSelected(product);
+
+        if (product === null) {
+        }
+
+        setOpenSelectModal(false);
+        setOpenProductModal(true);
+    };
+
+    const handleCloseSelectModal = () => {
+        setOpenSelectModal(false);
     };
 
     const handleAddToCartModal = () => {
-        if (productInStore) {
-            setOpenModal(false);
+        if (productSelected) {
+            setOpenProductModal(false);
             setMessage(true);
             return;
         }
-
-        if (checkSelectionChoosen()) {
-            handleCloseModal();
+        if (productModalRef.current.checkSelectionChoosen()) {
             setMessage(true);
-
-            dispatch(
-                cartThunk.addToCart({
-                    name: data.name,
-                    selection,
-                    quantity: quantity,
-                }),
-            );
+            addToCart();
+            handleCloseProductModal();
         }
+    };
+
+    const addToCart = () => {
+        dispatch(
+            cartThunk.addToCart({
+                name: data.name,
+                selection,
+                quantity: quantity,
+            }),
+        );
     };
 
     const handleAddToCart = () => {
-        if (data.discOptions.length > 0 && !openModal) {
-            setOpenModal(true);
-        } else {
-            dispatch(
-                cartThunk.addToCart({
-                    name: data.name,
-                    selection,
-                    quantity: quantity,
-                }),
-            );
-        }
+        if (data.discOptions.length > 0 && !openProductModal) {
+            setOpenProductModal(true);
+        } else addToCart();
     };
 
     const increaseQuantity = () => {
-        if (data.discOptions.length > 0 && !openModal) {
-            setOpenModal(true);
-        } else dispatch(cartThunk.increase(productInStore));
-
-        if (!openModal) setMessage(true);
+        if (data.discOptions.length > 0) {
+            if (productsInCart.length > 0) {
+                setOpenSelectModal(true);
+            } else setOpenProductModal(true);
+        } else {
+            dispatch(cartThunk.increase(productSelected));
+            setMessage(true);
+        }
     };
 
     const increaseQuantityModal = () => {
-        if (!productInStore) {
+        if (productModalRef.current.checkSelectionChoosen() && !productSelected) {
             dispatch(
                 cartThunk.addToCart({
                     name: data.name,
@@ -154,36 +175,17 @@ function HomeProduct({ data, favorite }) {
                     quantity: quantity + 1,
                 }),
             );
-        } else dispatch(cartThunk.increase(productInStore));
+        } else dispatch(cartThunk.increase(productSelected));
     };
 
     const decreaseQuantity = () => {
-        if (quantity === 1) {
-            if (productInStore) dispatch(cartThunk.removeFromCart(productInStore));
+        if (data.discOptions?.length > 0 && !productSelected) {
+            setOpenSelectModal(true);
+        } else if (quantity === 1) {
+            if (productSelected) dispatch(cartThunk.removeFromCart(productSelected));
 
-            if (openModal) setOpenModal(false);
-        } else {
-            dispatch(cartThunk.decrease(productInStore));
-        }
-    };
-
-    const handelSelectOption = (subOption, section, type, selectionIndex, subOptionIndex) => {
-        setWarnings((prev) => {
-            prev[selectionIndex].isWarning = false;
-            return [...prev];
-        });
-
-        setSelection((prev) => {
-            prev[selectionIndex] = {
-                section,
-                type,
-                price: subOption.price,
-                name: subOption.name,
-                indexSelection: subOptionIndex,
-            };
-
-            return [...prev];
-        });
+            if (openProductModal) setOpenProductModal(false);
+        } else dispatch(cartThunk.decrease(productSelected));
     };
 
     const handleFavorite = () => {
@@ -209,10 +211,12 @@ function HomeProduct({ data, favorite }) {
                 icon={<Icons.minus />}
             />
 
-            {openModal ? (
+            {openProductModal ? (
                 <input onChange={() => {}} className={cs('modal-cart-quantity')} value={quantity} />
             ) : (
-                <div className={cs('product-cart-quantity')}>{quantity}</div>
+                <div className={cs('product-cart-quantity')}>
+                    {productsInCart.reduce((accu, curr) => accu + curr.detail.quantity, 0)}
+                </div>
             )}
 
             <Button
@@ -222,7 +226,7 @@ function HomeProduct({ data, favorite }) {
                 type="icon"
                 size="small"
                 animation
-                handleClick={openModal ? increaseQuantityModal : increaseQuantity}
+                handleClick={openProductModal ? increaseQuantityModal : increaseQuantity}
                 icon={<Icons.plus />}
             />
         </>
@@ -230,15 +234,15 @@ function HomeProduct({ data, favorite }) {
 
     const addToCartBtn = (
         <Button
-            className={cs('product-btn', { 'modal-btn': openModal })}
+            className={cs('product-btn', { 'modal-btn': openProductModal })}
             hover
             animation
-            handleClick={openModal ? handleAddToCartModal : handleAddToCart}
+            handleClick={openProductModal ? handleAddToCartModal : handleAddToCart}
             theme="primary"
             size="small"
-            icon={!openModal && <Icons.cart width="1.8rem" height="1.8rem" />}
+            icon={!openProductModal && <Icons.cart width="1.8rem" height="1.8rem" />}
         >
-            {openModal ? 'Add To Cart' : 'ADD TO CART'}
+            {openProductModal ? 'Add To Cart' : 'ADD TO CART'}
         </Button>
     );
 
@@ -248,7 +252,7 @@ function HomeProduct({ data, favorite }) {
                 <div className={cs('product-inner')}>
                     <Image className={cs('product-img')} src={data.image} alt="" />
                     {data.Discount && isDiscountAvailable && (
-                        <div className={cs('product-saleOff')}>{data.Discount.saleOff}% OFF</div>
+                        <div className={cs('product-saleOff')}>-{data.Discount.saleOff}% OFF</div>
                     )}
                     <div className={cs('product-infor')}>
                         <div className={cs('product-content')}>
@@ -267,8 +271,8 @@ function HomeProduct({ data, favorite }) {
 
                     <div className={cs('product-price')}>
                         <span className={cs('price')}>
-                            {price
-                                ? price.toLocaleString('vi-VN', {
+                            {data.price
+                                ? data.price.toLocaleString('vi-VN', {
                                       style: 'currency',
                                       currency: 'VND',
                                   })
@@ -284,7 +288,7 @@ function HomeProduct({ data, favorite }) {
                         )}
                     </div>
 
-                    {productInStore && quantity ? (
+                    {productsInCart.length > 0 && quantity ? (
                         <div className={cs('product-cart')}>{actionsCartElement}</div>
                     ) : (
                         addToCartBtn
@@ -292,113 +296,39 @@ function HomeProduct({ data, favorite }) {
                 </div>
             </div>
 
-            {!openModal && <Message isMessage={isMessage} setMessage={setMessage} />}
+            {!openProductModal && <Message isMessage={isMessage} setMessage={setMessage} />}
 
-            {openModal && data.discOptions && (
-                <Modal className={cs('modal-wrapper')} onClose={handleCloseModal}>
-                    <div className={cs('modal-img-wrapper')}>
-                        <img src={data.image} className={cs('modal-img')} alt={data.name} />
-                        <div className={cs('modal-img-infor')}>
-                            <h1 className={cs('modal-img-title')}>{data.name}</h1>
-                            <p className={cs('modal-img-desc')}>{data.description}</p>
+            {openSelectModal && (
+                <SelectModal
+                    data={data}
+                    products={productsInCart}
+                    handleCloseModal={handleCloseSelectModal}
+                    handleChooseProduct={handleChooseProduct}
+                ></SelectModal>
+            )}
+
+            {openProductModal && data.discOptions && (
+                <ProductModal
+                    ref={productModalRef}
+                    data={data}
+                    selection={selection}
+                    discount={isDiscountAvailable && data.Discount.saleOff}
+                    productSelection={productSelected?.Selection || []}
+                    handleSelection={setSelection}
+                    handleCloseModal={handleCloseProductModal}
+                >
+                    <div className={cs('modal-actions')}>
+                        <div className={cs('modal-cart')}>{actionsCartElement}</div>
+
+                        <div className={cs('modal-price')}>
+                            {price.toLocaleString('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND',
+                            })}
                         </div>
+                        {addToCartBtn}
                     </div>
-
-                    <div className={cs('modal-disc-actions-wrapper')}>
-                        <div className={cs('modal-disc-wrapper')}>
-                            <div className={cs('modal-disc-inner')}>
-                                {data.discOptions.map((item, index) => {
-                                    return (
-                                        <div key={index} className={cs('modal-disc-item')}>
-                                            <div
-                                                className={cs('disc-item-header', {
-                                                    warning: warnings[index].isWarning,
-                                                })}
-                                            >
-                                                <div className={cs('disc-item-title')}>{item.name}</div>
-                                                <div
-                                                    className={cs('disc-item-status', {
-                                                        selected: selection[index].indexSelection !== -1,
-                                                    })}
-                                                >
-                                                    {selection[index].indexSelection !== -1 ? 'Selected' : 'Required'}
-                                                </div>
-                                            </div>
-                                            <div className={cs('disc-item-options')}>
-                                                {item.subOptions.map((subOption, subOptionIndex) => (
-                                                    <div
-                                                        onClick={() =>
-                                                            handelSelectOption(
-                                                                subOption,
-                                                                item.name,
-                                                                item.type,
-                                                                index,
-                                                                subOptionIndex,
-                                                            )
-                                                        }
-                                                        key={subOptionIndex}
-                                                        className={cs('disc-item-selection')}
-                                                    >
-                                                        <Button
-                                                            animation
-                                                            type="icon"
-                                                            className={cs('disc-item-btn')}
-                                                            icon={
-                                                                <AnimatePresence>
-                                                                    <motion.div
-                                                                        className={cs('disc-item-icon-outline')}
-                                                                    >
-                                                                        {selection[index].indexSelection ==
-                                                                            subOptionIndex && (
-                                                                            <motion.div
-                                                                                key={subOptionIndex}
-                                                                                initial={{ scale: 0 }}
-                                                                                animate={{ scale: 0.8 }}
-                                                                                exit={{ scale: 0 }}
-                                                                                className={cs('disc-item-icon-inner')}
-                                                                            ></motion.div>
-                                                                        )}
-                                                                    </motion.div>
-                                                                </AnimatePresence>
-                                                            }
-                                                            theme="outline"
-                                                        />
-                                                        <div className={cs('disc-item-name')}>
-                                                            {`${subOption.name} ${
-                                                                subOption.signature ? '(Signature)' : ''
-                                                            }`}
-                                                        </div>
-                                                        <div className={cs('disc-item-price')}>
-                                                            {subOption.price !== 0
-                                                                ? subOption.price.toLocaleString('vi-VN', {
-                                                                      style: 'currency',
-                                                                      currency: 'VND',
-                                                                  })
-                                                                : ''}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        <div className={cs('modal-actions')}>
-                            <div className={cs('modal-cart')}>{actionsCartElement}</div>
-
-                            <div className={cs('modal-price')}>
-                                {price.toLocaleString('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND',
-                                })}
-                            </div>
-
-                            {addToCartBtn}
-                        </div>
-                    </div>
-                </Modal>
+                </ProductModal>
             )}
         </>
     );
