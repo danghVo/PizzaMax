@@ -18,6 +18,7 @@ const images = {
     flag: require('./flag.png'),
     emptyCart: require('./cart-empty.svg').default,
     bin: require('./garbage.png'),
+    wave: require('./wave-bot.png'),
 };
 
 export default images;
