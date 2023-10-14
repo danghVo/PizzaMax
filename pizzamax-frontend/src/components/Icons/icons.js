@@ -74,9 +74,9 @@ export const valid = ({ className, width = '2.2rem', height = '2.2em' }) => {
     );
 };
 
-export const arrowRight = ({ className, width = '2rem', height = '2rem' }) => (
+export const arrowRight = ({ className, width = '2rem', height = '2rem', fill = 'white' }) => (
     <svg className={className} focusable="false" width={width} height={height} viewBox="0 0 24 24">
-        <path d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
+        <path fill={fill} d="M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path>
     </svg>
 );
 
