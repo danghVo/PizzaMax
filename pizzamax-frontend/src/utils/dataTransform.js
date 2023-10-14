@@ -20,11 +20,10 @@ export const favorite = (data) => {
     return data.map((item) => item.id);
 };
 
-// export const cart = (data) => {
-//     return data.map((item) => ({
-//         ...item,
-//     }));
-// };
+export const cart = (data) => ({
+    ...data,
+    products: data.products.sort((a, b) => Date.parse(a.detail.createdAt) - Date.parse(b.detail.createdAt)),
+});
 
 export const user = (data) => {
     return {
