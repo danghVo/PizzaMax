@@ -26,7 +26,7 @@ function Modal({ children, onClose, className, noCloseBtn, initial, animate, tra
     const animation = {
         initial: initial || { scale: 0.6, opacity: 0.5 },
         animate: animate || { scale: 1, opacity: 1 },
-        transition: transition || { ease: 'linear', duration: 0.3 },
+        transition: transition || { ease: 'linear', type: 'spring', duration: 1 },
         exit: exit,
     };
 
