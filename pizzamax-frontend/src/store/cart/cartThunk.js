@@ -2,8 +2,19 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { cartService } from '~/services';
 
+const dataTranformReqAddToCart = (data) => {
+    return {
+        ...data,
+        selection: Object.keys(data.selection).map((section) => ({
+            section,
+            ...data.selection[section],
+            indexSlection: undefined,
+        })),
+    };
+};
+
 export const addToCart = createAsyncThunk('cart/addToCart', async (payload, { getState }) => {
-    const cart = await cartService.addToCart({ ...payload, uuid: getState().cart.uuid });
+    const cart = await cartService.addToCart({ ...dataTranformReqAddToCart(payload), uuid: getState().cart.uuid });
 
     return cart;
 });
