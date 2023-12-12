@@ -13,33 +13,19 @@ import Input from '~/components/Input';
 import Form from '~/components/Form';
 import { number, required } from '~/rules';
 import { addressThunk, addressSelector, addressSlice } from '~/store/address';
-import { userSelector, userSlice } from '~/store/user';
-import { districtService } from '~/services';
+import { userSelector } from '~/store/user';
+import { addressService, districtService } from '~/services';
+import { cartSelector, cartThunk } from '~/store/cart';
+import SuggestCartModal from '~/components/Modal/SuggestCartModal';
+import { systemSlice } from '~/store/system';
+import { cart } from '~/utils/dataTransform';
 
 const headerCs = classNames.bind(headerStyles);
 const modalCs = classNames.bind(modalStyles);
 
 const cityOption = ['Cần Thơ', 'Hồ Chí Minh'];
 
-const areaOption = [
-    ' New Rizvia Gulzary Hijri',
-    ' Vanthali Memon Association',
-    'A.F GARDEN SOCIETY ',
-    'A1 COMPLEX',
-    'Abbas Town',
-    'Abdullah Gabol Goth',
-    'Abdullah Haroon Road, Karachi',
-    'Abdullah Shah Ghazi - Clifton',
-    'ABDULLAH SHAH GHAZI GOTH',
-    'Abid Town',
-    'Ablaagh e Aama CHS',
-    'Abul Hassan Isphahani Road',
-    'Abuzar Ghaffari  C.H.S',
-    'Abuzar Ghaffari Chs Phase 2',
-    'Adamjee Nagar',
-];
-
-function Location() {
+function Location({ user }) {
     const [openModal, setOpenModal] = useState(false);
     const [orderType, setOrderType] = useState(1);
     const [location, setLocation] = useState('');
@@ -48,66 +34,119 @@ function Location() {
         alley: '',
         district: '',
         houseNumber: '',
+        ward: '',
         city: '',
     });
-    const [addLocation, setAddLocaltion] = useState(false);
+    const [addLocation, setAddLocation] = useState(false);
     const [districtOption, setDistrictOption] = useState([]);
     const [errMessage, setErrMessage] = useState('');
     const [loading, setLoading] = useState(false);
+    const [currentOptionData, setCurrentOptionData] = useState();
+    const [openSuggestModal, setOpenSuggestModal] = useState(false);
 
     const addressRef = useRef();
-    const cityOptionRef = useRef();
-    const districtOptionRef = useRef();
-
-    const user = useSelector(userSelector.user);
 
     const shopAddress = useSelector(addressSelector.shopAddress);
     const userAddress = useSelector(addressSelector.userAddress);
-
-    const currentAddress = JSON.parse(window.localStorage.getItem('currentAddress')) || {};
+    const currentOrderType = useSelector(addressSelector.orderType);
+    const currentAddress = useSelector(addressSelector.currentAddress);
+    const formStatusApi = useSelector(addressSelector.formStatusApi);
+    const cartStatus = useSelector(cartSelector.statusId);
+    const isLogin = useSelector(userSelector.isLogin);
 
     const dispatch = useDispatch();
 
     useEffect(() => {
         dispatch(addressThunk.getAllShopAddress());
+        setOrderType(currentOrderType);
     }, []);
 
     useEffect(() => {
+        setOrderType(currentOrderType);
+    }, [currentOrderType]);
+
+    useEffect(() => {
         if (user) dispatch(addressThunk.getAllUserAddress({ uuid: user.uuid }));
-    }, [user]);
+    }, [isLogin]);
 
     useEffect(() => {
-        setLocation(currentAddress[orderType]);
-    }, [orderType]);
+        if (formStatusApi.status === 'success') {
+            dispatch(addressSlice.actions.setApiStart(''));
+            setLoading(false);
+            setAddLocation(false);
+        } else if (formStatusApi.status === 'error') {
+            setLoading(false);
+            setErrMessage(formStatusApi.errorMessage);
+            dispatch(addressSlice.actions.setApiStart(''));
+        }
+    }, [formStatusApi]);
 
     useEffect(() => {
-        setAddress((prev) => ({ ...prev, district: '' }));
+        if (location) {
+            let locationExist;
+            if (orderType === 2) {
+                locationExist = userAddress.find((item) => item.address === location);
 
-        if (addressForm.city !== '') {
-            const getDistrictOfCity = async () => {
-                const districts = await districtService.getDistricts(addressForm.city);
+                if (locationExist) {
+                    dispatch(cartThunk.getDeliveryCharge(locationExist.id));
+                }
+            } else locationExist = shopAddress.find((item) => item.address === location);
 
-                setDistrictOption(districts);
+            const payload = {
+                address: location,
+                id: locationExist ? locationExist.id : currentAddress[orderType].id,
+                orderType,
             };
 
-            getDistrictOfCity();
+            if (openModal) {
+                dispatch(addressSlice.actions.setCurrentAddress(payload));
+            } else dispatch(addressSlice.actions.setCurrentAddress({ ...payload, orderType: currentOrderType }));
         }
-    }, [addressForm.city]);
+    }, [location]);
+
+    useEffect(() => {
+        setCurrentOptionData(
+            orderType === 2 ? userAddress.map((item) => item.address) : shopAddress.map((item) => item.address),
+        );
+        if (currentAddress[orderType].address) {
+            setLocation(currentAddress[orderType].address);
+        } else if (shopAddress.length > 0 && orderType === 1) {
+            setLocation(shopAddress[0].address);
+        } else {
+            setLocation('');
+        }
+    }, [orderType, userAddress, shopAddress, currentAddress]);
+
+    const getDistrictOfCity = async (selection) => {
+        const districts = await districtService.getDistricts(selection);
+
+        setDistrictOption(districts || []);
+    };
+
+    const handleChooseLocation = (selection) => {
+        setLocation(selection);
+    };
+
+    const handleChooseCityOption = (selection) => {
+        setAddress((prev) => ({ ...prev, city: selection }));
+        getDistrictOfCity(selection);
+    };
 
     const handleCloseModal = () => {
         setOpenModal(false);
+        setAddLocation(false);
     };
 
     const handleChooseDelivery = () => {
         addressRef.current?.clearOption();
-        setOrderType(1);
-        setAddLocaltion(false);
+        setAddLocation(false);
+        setOrderType(2);
     };
 
     const handleChoosePickUp = () => {
         addressRef.current?.clearOption();
-        setAddLocaltion(false);
-        setOrderType(2);
+        setAddLocation(false);
+        setOrderType(1);
     };
 
     const handleSetOption = (setSelectionToState, currentSelectForState) => {
@@ -115,103 +154,129 @@ function Location() {
     };
 
     const handleClickSelectBtn = () => {
-        window.localStorage.setItem(
-            'currentAddress',
-            JSON.stringify({
-                ...currentAddress,
-                [orderType]: location,
-            }),
-        );
+        if (location) {
+            dispatch(addressSlice.actions.setOrderType({ orderType }));
+        }
+
         handleCloseModal();
     };
 
-    const handleAddLocaltion = async () => {
+    const handleAddLocaltion = () => {
         if (user) {
             setLoading(true);
-            await dispatch(
+            dispatch(
                 addressThunk.addAddressByUser({
                     uuid: user.uuid,
                     ...addressForm,
                     alley: parseInt(addressForm),
                 }),
             );
-            setLoading(false);
-        } else setErrMessage('You must log in first');
+        } else setErrMessage('Bạn cần đăng nhập trước');
     };
 
     const handleError = () => {
-        setErrMessage('Please complete form');
+        setErrMessage('Hoàn thành Form');
     };
 
-    const handleSetAddLocaltion = () => {
-        setAddLocaltion(true);
+    const handleSetAddLocation = () => {
+        setAddLocation(true);
     };
 
     const handleSetChooseLocation = () => {
-        setAddLocaltion(false);
+        setAddLocation(false);
+    };
+
+    const handelCurrentLocation = () => {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const { latitude, longitude } = position.coords;
+            const address = await addressService.currentLocation({ latitude, longitude });
+            if (address.error) {
+                setErrMessage(address.error);
+            } else setAddress(address);
+        });
+    };
+
+    const handleOpen = () => {
+        if (cartStatus === 2) {
+            setOpenSuggestModal(true);
+        } else setOpenModal(true);
     };
 
     return (
         <>
             <Button
                 className={headerCs('location')}
-                handleClick={(e) => setOpenModal(true)}
+                handleClick={handleOpen}
                 theme="default"
+                animation
                 icon={<Icons.location />}
-                header={orderType === 1 ? 'Pick-up from' : 'Deliver to'}
+                header={currentOrderType === 1 ? 'Mua mang về' : 'Giao hàng'}
             >
-                {location ? <span>{location}</span> : ''}
+                {currentAddress[currentOrderType].address && <span>{currentAddress[currentOrderType].address}</span>}
             </Button>
 
             {openModal && (
-                <Modal className={modalCs('location-modal')} onClose={handleCloseModal}>
+                <Modal
+                    className={modalCs('location-modal', {
+                        larger: addLocation,
+                    })}
+                    onClose={handleCloseModal}
+                >
                     <div className={modalCs('modal-logo')}>
                         <img src={images.logo} alt="logo" />
                     </div>
 
                     <div className={modalCs('modal-type')}>
-                        <p className={modalCs('title')}>Select your order type</p>
+                        <p className={modalCs('title')}>Hình thức mua hàng</p>
 
                         <div className={modalCs('actions')}>
                             <Button
                                 animation
-                                className={modalCs('actions-btn', { disable: orderType === 2 })}
-                                theme="primary"
-                                size="small"
-                                handleClick={handleChooseDelivery}
-                            >
-                                PICK-UP
-                            </Button>
-
-                            <Button
-                                animation
-                                className={modalCs('actions-btn', { disable: orderType === 1 })}
+                                className={modalCs('actions-btn', { disable: orderType == 2 })}
                                 theme="primary"
                                 size="small"
                                 handleClick={handleChoosePickUp}
                             >
-                                DELIVERY
+                                Mua mang về
+                            </Button>
+
+                            <Button
+                                animation
+                                className={modalCs('actions-btn', { disable: orderType == 1 })}
+                                theme="primary"
+                                size="small"
+                                handleClick={handleChooseDelivery}
+                            >
+                                Giao hàng
                             </Button>
                         </div>
                     </div>
 
                     <div className={modalCs('modal-location')}>
                         <p className={modalCs('title')}>
-                            {orderType === 1
-                                ? 'Please select your location'
-                                : 'Which outlet would you like to pick-up from?'}
+                            {orderType == 1 ? 'Cửa hàng nào gần bạn nhất ?' : 'Chọn địa chỉ giao hàng'}
                         </p>
 
-                        {orderType === 2 && (
+                        {orderType == 2 && (
                             <div className="flex">
                                 <Button
                                     className={modalCs('modal-location-btn')}
                                     icon={<Icons.locationModal />}
                                     theme="default"
-                                    handleClick={addLocation ? handleSetChooseLocation : handleSetAddLocaltion}
+                                    handleClick={addLocation ? handleSetChooseLocation : handleSetAddLocation}
                                 >
-                                    {addLocation ? 'Use Your Location' : 'Add Your Location'}
+                                    {addLocation ? 'Vị trí của tôi' : 'Thêm vị trí'}
                                 </Button>
+                                {addLocation && (
+                                    <Button
+                                        className={modalCs('modal-location-btn')}
+                                        icon={<Icons.locationModal />}
+                                        theme="default"
+                                        handleClick={handelCurrentLocation}
+                                    >
+                                        Vị trí hiện tại
+                                    </Button>
+                                )}
                             </div>
                         )}
                     </div>
@@ -224,11 +289,11 @@ function Location() {
                                     selecting={{
                                         currentSelectForState: location,
                                         handleSetOption,
-                                        setSelectionToState: setLocation,
+                                        setSelectionToState: handleChooseLocation,
                                     }}
                                     className={modalCs('infor-selection')}
-                                    placeholder="Select Address"
-                                    optionData={orderType === 1 ? shopAddress : userAddress}
+                                    placeholder="Chọn địa chỉ"
+                                    optionData={currentOptionData}
                                 />
 
                                 <Button
@@ -239,7 +304,7 @@ function Location() {
                                     handleClick={handleClickSelectBtn}
                                     className={modalCs('modal-select-btn')}
                                 >
-                                    Select
+                                    Chọn
                                 </Button>
                             </>
                         ) : (
@@ -252,9 +317,9 @@ function Location() {
                                 )}
                                 <Form handlesubmit={handleAddLocaltion} handleError={handleError}>
                                     <div className="flex gap-2 mt-3">
-                                        <div>
+                                        <div className="flex-1">
                                             <Input
-                                                placeholder="House Number"
+                                                placeholder="Số nhà"
                                                 value={addressForm.houseNumber}
                                                 onChange={(e) =>
                                                     setAddress((prev) => ({ ...prev, houseNumber: e.target.value }))
@@ -263,9 +328,9 @@ function Location() {
                                                 className={modalCs('infor-input', 'infor-street')}
                                             />
                                         </div>
-                                        <div>
+                                        <div className="flex-1">
                                             <Input
-                                                placeholder="Alley"
+                                                placeholder="Hẻm"
                                                 value={addressForm.alley}
                                                 onChange={(e) =>
                                                     setAddress((prev) => ({ ...prev, alley: e.target.value }))
@@ -274,24 +339,11 @@ function Location() {
                                                 className={modalCs('infor-input', 'infor-street')}
                                             />
                                         </div>
-                                        <InputOption
-                                            ref={cityOptionRef}
-                                            rules={[required]}
-                                            selecting={{
-                                                currentSelectForState: addressForm.city,
-                                                handleSetOption,
-                                                setSelectionToState: (selection) =>
-                                                    setAddress((prev) => ({ ...prev, city: selection })),
-                                            }}
-                                            className={modalCs('infor-city')}
-                                            optionData={cityOption}
-                                            placeholder="Select City"
-                                        />
                                     </div>
                                     <div className="flex gap-2 mt-2">
                                         <div className="flex-1">
                                             <Input
-                                                placeholder="Street"
+                                                placeholder="Đường"
                                                 value={addressForm.street}
                                                 onChange={(e) =>
                                                     setAddress((prev) => ({ ...prev, street: e.target.value }))
@@ -300,19 +352,44 @@ function Location() {
                                                 className={modalCs('infor-input', 'infor-street')}
                                             />
                                         </div>
-                                        <InputOption
-                                            placeholder="District"
-                                            ref={districtOptionRef}
-                                            rules={[]}
-                                            selecting={{
-                                                currentSelectForState: addressForm.district,
-                                                handleSetOption,
-                                                setSelectionToState: (selection) =>
-                                                    setAddress((prev) => ({ ...prev, district: selection })),
-                                            }}
-                                            className={modalCs('infor-district')}
-                                            optionData={districtOption}
-                                        />
+                                        <div className="flex-1">
+                                            <Input
+                                                placeholder="Phố"
+                                                value={addressForm.ward}
+                                                onChange={(e) =>
+                                                    setAddress((prev) => ({ ...prev, ward: e.target.value }))
+                                                }
+                                                rules={[]}
+                                                className={modalCs('infor-input', 'infor-street')}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <div className="flex-1">
+                                            <InputOption
+                                                rules={[required]}
+                                                selecting={{
+                                                    currentSelectForState: addressForm.city,
+                                                    handleSetOption,
+                                                    setSelectionToState: handleChooseCityOption,
+                                                }}
+                                                optionData={cityOption}
+                                                placeholder="Chọn thành phố"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <InputOption
+                                                placeholder="Quận"
+                                                rules={[required]}
+                                                selecting={{
+                                                    currentSelectForState: addressForm.district,
+                                                    handleSetOption,
+                                                    setSelectionToState: (selection) =>
+                                                        setAddress((prev) => ({ ...prev, district: selection })),
+                                                }}
+                                                optionData={districtOption}
+                                            />
+                                        </div>
                                     </div>
 
                                     <Button
@@ -323,7 +400,7 @@ function Location() {
                                         hover
                                         className={modalCs('modal-select-btn')}
                                     >
-                                        {loading ? <Icons.loading /> : 'Add Address'}
+                                        {loading ? <Icons.loading /> : 'Thêm'}
                                     </Button>
                                 </Form>
                             </>
@@ -331,6 +408,8 @@ function Location() {
                     </div>
                 </Modal>
             )}
+
+            {openSuggestModal && <SuggestCartModal handleCloseModal={() => setOpenSuggestModal(false)} />}
         </>
     );
 }

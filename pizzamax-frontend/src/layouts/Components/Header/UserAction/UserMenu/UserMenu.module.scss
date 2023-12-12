@@ -8,7 +8,7 @@
     border-radius: 10px;
     box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
     overflow: hidden;
-    width: 125px;
+    // width: 125px;
 }
 
 .user-menu-list {
@@ -20,8 +20,14 @@
     font-size: 1.6rem;
     height: 42px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
 
     &:hover {
         background-color: #e1e1e1;
+    }
+
+    .icon {
+        margin-right: 8px;
     }
 }

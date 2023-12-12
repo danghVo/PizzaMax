@@ -1,17 +1,21 @@
 const router = require('express').Router();
 const { UserController, AddressController, ProductController } = require('../controller');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/user/register', UserController.register);
 router.get('/user/getInforByToken', UserController.getInforByToken);
 
 router.all('/user/:uuid/*', UserController.checkUser);
+router.patch('/user/:uuid/update', UserController.update);
 
-router.patch('/user/:uuid/changePassword', UserController.changePassword);
-router.patch('/user/:uuid/update', UserController.updateUser);
+router.post('/user/:uuid/createNewCart', UserController.createNewCart);
+
+router.patch('/user/:uuid/addAvatar', [upload.single('image'), UserController.addAvatar]);
 
 router.get('/user/:uuid/getAllAddress', AddressController.getAddressesOfUser);
-router.post('/user/:uuid/addAddress', AddressController.addAddress);
-router.patch('/user/:uuid/editAddress/:addressId', AddressController.editAddress);
+router.post('/user/:uuid/addAddress', AddressController.createUserAddress);
+router.patch('/user/:uuid/updateAddress/:addressId', AddressController.editAddress);
 router.delete('/user/:uuid/deleteAddress/:addressId', AddressController.deleteAddress);
 
 router.post('/user/:uuid/addFavor/:productId', ProductController.addFavor);

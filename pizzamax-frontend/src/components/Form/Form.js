@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const emptyFunc = () => {};
 
-function Form({ children, handlesubmit, handleError = emptyFunc, name, ...props }) {
+function Form({ children, handlesubmit, preventPressEnter = false, handleError = emptyFunc, name, ...props }) {
     const formRef = useRef();
 
     useEffect(() => {
@@ -15,17 +15,17 @@ function Form({ children, handlesubmit, handleError = emptyFunc, name, ...props 
 
     useEffect(() => {
         const submitElement = formRef.current.querySelector('[do="submit"]');
+        const inputElements = formRef.current.querySelectorAll('input');
 
         const handlePressEnterToSubmit = (e) => e.key === 'Enter' && handleCheckForSubmit();
-
-        const inputElements = formRef.current.querySelectorAll('input');
-        Array.from(inputElements).forEach((inputElement) => {
-            inputElement.addEventListener('keypress', handlePressEnterToSubmit);
-        });
+        if (!preventPressEnter) {
+            Array.from(inputElements).forEach((inputElement) => {
+                inputElement.addEventListener('keypress', handlePressEnterToSubmit);
+            });
+        }
 
         const handleCheckForSubmit = () => {
             let valid = true;
-
             Array.from(inputElements).forEach((inputElement) => {
                 if (
                     (inputElement.value === '' && inputElement.getAttribute('rule')) ||
@@ -37,9 +37,10 @@ function Form({ children, handlesubmit, handleError = emptyFunc, name, ...props 
             });
 
             if (valid) {
-                handlesubmit();
+                handlesubmit(formRef);
             } else {
                 handleError();
+                alert('Vui lòng nhập đầy đủ thông tin');
             }
         };
 
@@ -48,9 +49,11 @@ function Form({ children, handlesubmit, handleError = emptyFunc, name, ...props 
         return () => {
             submitElement.removeEventListener('click', handleCheckForSubmit);
 
-            Array.from(inputElements).forEach((inputElement) => {
-                inputElement.removeEventListener('keypress', handlePressEnterToSubmit);
-            });
+            if (!preventPressEnter) {
+                Array.from(inputElements).forEach((inputElement) => {
+                    inputElement.removeEventListener('keypress', handlePressEnterToSubmit);
+                });
+            }
         };
     });
 

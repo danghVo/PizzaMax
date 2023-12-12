@@ -1,0 +1,127 @@
+.sidebar-admin-wrapper {
+    background-color: var(--primary-color);
+    width: 100px;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    position: relative;
+    // overflow: hidden;
+}
+
+.active {
+    width: 10px;
+    height: 60px;
+    position: absolute;
+    right: 0;
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+    background-color: white;
+    opacity: 0;
+}
+
+.home-item {
+    position: absolute;
+    top: 12px;
+}
+
+.sidebar-admin-list {
+    margin-top: 80px;
+}
+
+.sidebar-admin-item {
+    padding: 8px 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar-admin-btn {
+    background-color: white;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+
+    span {
+        fill: var(--primary-color);
+    }
+
+    &:hover {
+        span {
+            fill: white;
+        }
+    }
+}
+
+// Bell
+.bell-wrapper {
+    margin: 12px 0;
+    position: relative;
+
+    .quantity {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        color: white;
+        background-color: var(--primary-color);
+        padding: 2px 8px;
+        border-radius: 50%;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    }
+
+    &:hover .message-list {
+        display: flex;
+    }
+
+    .message-list {
+        position: absolute;
+        left: calc(100% + 16px);
+        top: 8px;
+        min-width: 200px;
+        min-height: 50px;
+        background-color: white;
+        padding: 12px 0;
+        box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        border-radius: 10px;
+        z-index: 3;
+        display: none;
+        align-items: center;
+        flex-direction: column;
+
+        &::before {
+            content: '';
+            border-width: 12px 8px;
+            border-color: transparent;
+            border-right-color: rgb(255, 255, 255);
+            position: absolute;
+            // top: -22px;
+            top: 10px;
+            right: 100%;
+        }
+
+        .message-item {
+            padding: 12px 8px;
+            white-space: nowrap;
+            position: relative;
+
+            + .message-item::before {
+                content: '';
+                width: 100%;
+                height: 1px;
+                background-color: #e8e8e8;
+                position: absolute;
+                top: 0;
+            }
+        }
+
+        .empty {
+            text-align: center;
+            white-space: nowrap;
+            font-weight: 500;
+            padding: 0 8px;
+        }
+    }
+}

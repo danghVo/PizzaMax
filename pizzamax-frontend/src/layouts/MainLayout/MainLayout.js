@@ -1,16 +1,19 @@
-import classNames from 'classnames/bind';
-
 import Header from '../Components/Header';
 import Footer from '../Components/Footer';
-import styles from './MainLayout.module.scss';
-
-const cs = classNames.bind(styles);
+import { useEffect } from 'react';
 
 function MainLayout({ children }) {
+    useEffect(() => {
+        window.scroll({
+            top: 0,
+            left: 0,
+        });
+    });
+
     return (
         <div>
             <Header />
-            <div className={cs('body')}>{children}</div>
+            <div>{children}</div>
             <Footer />
         </div>
     );

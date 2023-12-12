@@ -37,7 +37,7 @@ class TypeService extends Service {
         const isExist = await this.find(type);
 
         if (isExist) {
-            throwError(409, 'Type has already existed');
+            throwError(409, 'Đã tồn tại ');
         } else return await this.model.create({ ...type, timeId: timeId && 2 });
     }
 
@@ -60,14 +60,15 @@ class TypeService extends Service {
 
         if (isExist) {
             await this.update(typeId, Object.assign(type, timeId && { timeId }));
-        } else throwError(500, 'Update fail');
+        } else throwError(404, 'Không tồn tại');
     }
 
     async deleteType(typeId) {
         const isExist = await this.find(typeId);
 
-        if (isExist) return await this.delete(typeId);
-        else throwError(404, 'Type doesnt exist');
+        if (isExist) {
+            return await this.delete(typeId);
+        } else throwError(404, 'Không tồn tại');
     }
 }
 

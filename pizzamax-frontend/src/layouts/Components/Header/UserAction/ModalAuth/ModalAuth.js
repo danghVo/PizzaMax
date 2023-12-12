@@ -12,6 +12,8 @@ import { userThunk, userSelector, userSlice } from '~/store/user';
 
 //Rule
 import { required, password, minLength, phoneNumber, sameValue } from '~/rules';
+import { systemSlice } from '~/store/system';
+import { user } from '~/utils/dataTransform';
 
 const modalCs = classNames.bind(modalStyles);
 const keysAllow = [
@@ -34,11 +36,16 @@ const keysAllow = [
 ];
 
 function ModalAuth({ handleCloseModal }) {
-    const [userData, setUser] = useState({ phoneNumber: '', name: '', password: '' });
+    const [userDataLogin, setUserLogin] = useState({ phoneNumber: '', password: '' });
+    const [userDataRegister, setUserDataRegister] = useState({
+        phoneNumber: '',
+        name: '',
+        password: '',
+        confirmPassword: '',
+    });
     const [errMessage, setErrMessage] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [isLogin, setIsLogin] = useState(false);
+    const [isLogin, setIsLogin] = useState(true);
 
     const switchForm = useRef(false);
 
@@ -46,8 +53,13 @@ function ModalAuth({ handleCloseModal }) {
 
     const apiStatus = useSelector(userSelector.apiStatus);
 
+    const inputPhoneRef = useRef(null);
+
+    const userData = isLogin ? userDataLogin : userDataRegister;
+
     useEffect(() => {
-        setUser({ phoneNumber: '', name: '', password: '' });
+        setUserLogin({ phoneNumber: '', name: '', password: '', confirmPassword: '' });
+        setUserDataRegister({ phoneNumber: '', name: '', password: '', confirmPassword: '' });
         setErrMessage('');
     }, [isLogin]);
 
@@ -56,26 +68,41 @@ function ModalAuth({ handleCloseModal }) {
             if (isLogin) {
                 handleCloseModal();
             } else {
+                dispatch(systemSlice.actions.setInform({ message: 'Đăng ký thành công', type: 'success' }));
                 setIsLogin(true);
             }
             dispatch(userSlice.actions.renewApiStatus());
-        } else setErrMessage(apiStatus.message);
-    });
+        } else {
+            setErrMessage(apiStatus.message);
+        }
+    }, [apiStatus]);
+
+    useEffect(() => {
+        if (errMessage) {
+            inputPhoneRef.current.focus();
+        }
+    }, [errMessage]);
 
     const handleInputPhone = (e) => {
         let textValue = e.target.value.slice(3).trim();
         if (textValue.length > 12) {
             return;
         }
-        if (textValue.length > 0) {
+        if (userData.phoneNumber.length === 0) {
+            const countPerThree = textValue.length / 3;
+            textValue = textValue.split('');
+            for (let i = 1; i <= countPerThree; i++) {
+                textValue[i * 3 - 1] += ' ';
+            }
+            textValue = ' ' + textValue.join('');
+        } else if (textValue.length > 0) {
             textValue = textValue.split(' ');
             let checkText = textValue.pop();
 
             if (checkText.length > 3) {
                 checkText = checkText.split('');
                 const newValue = ' ' + checkText.pop();
-                checkText.push(newValue);
-                checkText = checkText.join('');
+                checkText = checkText.join('') + newValue;
             }
 
             textValue.push(checkText);
@@ -83,11 +110,13 @@ function ModalAuth({ handleCloseModal }) {
             textValue = ' ' + textValue.join(' ');
         }
 
-        setUser((prev) => ({ ...prev, phoneNumber: textValue }));
+        if (isLogin) {
+            setUserLogin((prev) => ({ ...prev, phoneNumber: textValue }));
+        } else setUserDataRegister((prev) => ({ ...prev, phoneNumber: textValue }));
     };
 
     const handleKeyPhoneInput = (e) => {
-        if (e.keyCode == 8) {
+        if (e.keyCode === 8) {
             if (window.getSelection().toString() === '+84' + userData.phoneNumber) {
                 e.preventDefault();
                 const selection = window.getSelection();
@@ -97,7 +126,7 @@ function ModalAuth({ handleCloseModal }) {
 
                 e.target.setSelectionRange(range, range);
             }
-        } else if (!keysAllow.includes(e.key)) {
+        } else if (!keysAllow.includes(e.key) && e.key !== 'Control' && e.key !== 'v') {
             e.preventDefault();
         }
     };
@@ -106,14 +135,14 @@ function ModalAuth({ handleCloseModal }) {
         if (!loading) {
             setLoading(true);
             if (isLogin && !loading) {
-                await dispatch(
+                dispatch(
                     userThunk.login({
-                        ...userData,
+                        password: userData.password,
                         phoneNumber: userData.phoneNumber.split(' ').join(''),
                     }),
                 );
             } else {
-                await dispatch(
+                dispatch(
                     userThunk.register({
                         ...userData,
                         phoneNumber: userData.phoneNumber.split(' ').join(''),
@@ -144,37 +173,45 @@ function ModalAuth({ handleCloseModal }) {
         }
     };
 
-    const handleAsGuest = () => {
-        handleCloseModal();
+    const handleCommonInput = (field, userDataInput) => {
+        if (isLogin) {
+            setUserLogin((prev) => ({ ...prev, [field]: userDataInput }));
+        } else setUserDataRegister((prev) => ({ ...prev, [field]: userDataInput }));
     };
 
     return (
         <Modal className={modalCs('user-modal')} onClose={handleCloseModal}>
-            <p className={modalCs('title')}>Enter your information</p>
+            <p className={modalCs('title')}>Hãy nhập thông tin của bạn</p>
             {errMessage && (
                 <p className={modalCs('valid')}>
                     <Icons.valid className={modalCs('valid-icon')} />
                     {errMessage}
                 </p>
             )}
-            <Form name={isLogin ? 'login' : 'register'} handlesubmit={handleSubmit} handleError={handleSubmitErr}>
+            <Form
+                name={isLogin ? 'login' : 'register'}
+                className={modalCs('form-wrapper')}
+                handlesubmit={handleSubmit}
+                handleError={handleSubmitErr}
+            >
                 <div className={modalCs('content')}>
                     {!isLogin && (
                         <>
                             <label htmlFor="nickname" className={modalCs('advice')}>
-                                What can we should call you ?
+                                Chúng tôi nên gọi bạn như thế nào ?
                             </label>
                             <Input
                                 id="nickname"
                                 className={modalCs('input-form')}
                                 rules={[required]}
                                 value={userData.name}
-                                onChange={(e) => setUser((prev) => ({ ...prev, name: e.target.value }))}
+                                autoFocus
+                                onChange={(e) => setUserDataRegister((prev) => ({ ...prev, name: e.target.value }))}
                             />
                         </>
                     )}
                     <label htmlFor="phone-number" className={modalCs('advice')}>
-                        Please enter your mobile number
+                        Hãy nhập số điện thoại:
                     </label>
                     <div className={modalCs('phone-number')}>
                         <div className={modalCs('flag-wrapper')}>
@@ -182,46 +219,46 @@ function ModalAuth({ handleCloseModal }) {
                         </div>
 
                         <Input
+                            ref={inputPhoneRef}
                             id="phone-number"
                             className={modalCs('input-phone')}
                             value={'+84' + userData.phoneNumber}
-                            rules={isLogin ? [required] : [required, phoneNumber]}
+                            rules={isLogin ? [] : [required, phoneNumber]}
                             isPhoneText
+                            autoFocus
                             onKeyDown={handleKeyPhoneInput}
                             onChange={handleInputPhone}
                         />
                     </div>
 
                     <label htmlFor="password" className={modalCs('advice')}>
-                        Password:
+                        Mật khẩu:
                     </label>
                     <Input
                         id="password"
                         type="password"
                         className={modalCs('input-form')}
                         value={userData.password}
-                        rules={isLogin ? [required] : [required, minLength(8), password]}
-                        onChange={(e) => setUser((prev) => ({ ...prev, password: e.target.value }))}
+                        rules={isLogin ? [] : [required, minLength(8), password]}
+                        onChange={(e) => handleCommonInput('password', e.target.value)}
                     />
                     {!isLogin && (
                         <>
                             <label htmlFor="confirm-password" className={modalCs('advice')}>
-                                Confirm password:
+                                Nhập lại mật khẩu:
                             </label>
                             <Input
                                 id="confirm-password"
                                 type="password"
                                 className={modalCs('input-form')}
-                                value={confirmPassword}
-                                rules={[required, sameValue(userData.password)]}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                value={userData.confirmPassword}
+                                rules={[required, sameValue(userData.password, 'Mật khẩu nhập lại không khớp')]}
+                                onChange={(e) =>
+                                    setUserDataRegister((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                                }
                             />
                         </>
                     )}
-
-                    <p className={modalCs('about')}>
-                        This site is protected by reCAPTCHA and the Google Privacy Policy and Terms of Service apply.
-                    </p>
                 </div>
 
                 <div className={modalCs('actions')}>
@@ -235,7 +272,7 @@ function ModalAuth({ handleCloseModal }) {
                             theme={!isLogin ? 'primary' : 'default'}
                             size="small"
                         >
-                            {loading && !isLogin ? <Icons.loading /> : 'Register'}
+                            {loading && !isLogin ? <Icons.loading /> : 'Đăng ký'}
                         </Button>
 
                         <Button
@@ -247,25 +284,9 @@ function ModalAuth({ handleCloseModal }) {
                             theme={isLogin ? 'primary' : 'default'}
                             size="small"
                         >
-                            {loading && isLogin ? <Icons.loading /> : 'Login'}
+                            {loading && isLogin ? <Icons.loading /> : 'Đăng nhập'}
                         </Button>
                     </div>
-
-                    <div className={modalCs('separate')}>
-                        <div className={modalCs('line')}></div>
-                        <span>OR</span>
-                        <div className={modalCs('line')}></div>
-                    </div>
-
-                    <Button
-                        animation
-                        className={modalCs('actions-btn')}
-                        handleClick={handleAsGuest}
-                        theme="outline"
-                        size="small"
-                    >
-                        Order as Guest
-                    </Button>
                 </div>
             </Form>
         </Modal>

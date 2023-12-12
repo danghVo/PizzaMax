@@ -5,3 +5,4 @@ export { default as minLength } from './minLengthRule';
 export { default as maxLength } from './maxLengthRule';
 export { default as phoneNumber } from './phoneNumberRule';
 export { default as sameValue } from './sameValueRule';
+export { default as daySelectingRule } from './daySelectingRule';

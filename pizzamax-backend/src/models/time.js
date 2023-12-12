@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
     }
     Time.init(
         {
+            name: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
             fromDay: {
                 type: DataTypes.STRING,
                 allowNull: false,

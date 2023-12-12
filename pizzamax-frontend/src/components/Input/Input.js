@@ -1,5 +1,5 @@
 import classNames from 'classnames/bind';
-import { useState } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { useValid } from '~/hooks';
 import styles from './Input.module.scss';
@@ -7,24 +7,64 @@ import { forwardRef } from 'react';
 
 const cs = classNames.bind(styles);
 
-function Input({ value = '', rules = [], onChange, isPhoneText = false, ...props }, inputForwadRef) {
+function Input(
+    { value = '', label = null, textArea = false, rules = [], arrow, onChange, isPhoneText = false, ...props },
+    ref,
+) {
     const checkedData = isPhoneText ? value.slice(3).split(' ').join('') : value;
 
-    const { valid, message } = useValid(checkedData, rules);
+    const [errMess, setErrMess] = useState('');
+    const { message } = useValid(checkedData, rules);
+
+    const firstRender = useRef(true);
+
+    useEffect(() => {
+        if (value !== '') {
+            firstRender.current = false;
+        }
+
+        if (message && !firstRender.current) {
+            setErrMess(message);
+        } else setErrMess('');
+    }, [message, value]);
+
+    const handleKeyUp = (e) => {
+        if (e.key === 'Enter') {
+            e.target.blur();
+        }
+    };
+
+    const handleOnChange = (e) => {
+        onChange(e);
+    };
+
+    const InputTag = textArea ? 'textarea' : 'input';
 
     return (
-        <>
-            <div className={cs('input-wrapper')}>
-                <input
+        <div
+            className={cs('input-wrapper', {
+                isMessage: errMess,
+            })}
+        >
+            {label && (
+                <label className={cs('label')} htmlFor={label}>
+                    {label}:{' '}
+                </label>
+            )}
+            <div className={cs('input')}>
+                <div className={cs('icon')}>{arrow}</div>
+                <InputTag
+                    id={label}
+                    onKeyUp={handleKeyUp}
                     value={value}
-                    ref={inputForwadRef}
+                    ref={ref}
                     rule={rules.length > 0 ? '' : null}
-                    onChange={onChange}
+                    onChange={handleOnChange}
                     {...props}
                 />
-                {message && <div className={cs('input-message')}>{message}</div>}
             </div>
-        </>
+            {errMess && <div className={cs('input-message')}>{errMess}</div>}
+        </div>
     );
 }
 

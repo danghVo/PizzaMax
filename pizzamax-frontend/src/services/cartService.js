@@ -29,3 +29,41 @@ export const decrease = async (payload, option = {}) => {
 
     return dataTransform.cart(res);
 };
+
+export const getDeliveryCharge = async (payload, option = {}) => {
+    const res = await httpRequest.post(path + payload.uuid + '/getDeliveryCharge', {
+        addressId: payload.addressId,
+    });
+
+    return dataTransform.cart(res);
+};
+
+export const checkout = async (payload, option = {}) => {
+    const res = await httpRequest.patch(path + payload.uuid + '/checkout', {
+        addressId: payload.addressId,
+        orderWayId: payload.orderWayId,
+        paymentWayId: payload.paymentWayId,
+    });
+
+    return dataTransform.cart(res);
+};
+
+export const getAllCart = async () => {
+    const res = await httpRequest.get('admin/' + path + 'getAll');
+
+    return dataTransform.filterCart(res);
+};
+
+export const updateCartStatus = async (payload) => {
+    const res = await httpRequest.patch('admin/' + path + payload.uuid + '/updateStatus', {
+        statusId: payload.statusId,
+    });
+
+    return dataTransform.filterCart(res);
+};
+
+export const getAllDetail = async () => {
+    const res = await httpRequest.get('admin/' + path + 'getAllDetail');
+
+    return dataTransform.detail(res);
+};

@@ -1,10 +1,10 @@
 const router = require('express').Router();
 const { TypeController } = require('../../controller');
+const io = require('../../socket');
 
-router.get('/type/getAll', TypeController.getAll);
-router.post('/type/create', TypeController.create);
-router.patch('/type/update/:id', TypeController.update);
-router.delete('/type/delete/:id', TypeController.delete);
+router.post('/type/create', [TypeController.create, () => io.emit('reFetch')]);
+router.patch('/type/update/:id', [TypeController.update, () => io.emit('reFetch')]);
+router.delete('/type/delete/:id', [TypeController.delete, () => io.emit('reFetch')]);
 
 module.exports.name = 'type';
 module.exports.router = router;

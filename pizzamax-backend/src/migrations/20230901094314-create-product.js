@@ -1,7 +1,5 @@
 'use strict';
 
-const { DataTypes } = require('sequelize');
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
@@ -51,6 +49,10 @@ module.exports = {
             signature: {
                 type: Sequelize.BOOLEAN,
                 defaultValue: false,
+            },
+            hide: {
+                type: Sequelize.BOOLEAN,
+                defaultValue: 0,
             },
             createdAt: {
                 allowNull: false,

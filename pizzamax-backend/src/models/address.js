@@ -7,10 +7,11 @@ module.exports = (sequelize, DataTypes) => {
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        static associate({ City, Cart, User }) {
+        static associate({ AddressUser, AddressStore, City, Cart }) {
             this.belongsTo(City, { foreignKey: 'cityId' });
             this.hasMany(Cart);
-            this.belongsTo(User, { foreignKey: 'userId' });
+            this.hasOne(AddressStore);
+            this.hasOne(AddressUser);
         }
 
         toJSON() {
@@ -18,21 +19,14 @@ module.exports = (sequelize, DataTypes) => {
 
             return {
                 ...address,
-                userId: undefined,
-                UserId: undefined,
-                cityId: undefined,
                 CityId: undefined,
-                City: undefined,
+                cityId: undefined,
                 city: address.City?.name,
             };
         }
     }
     Address.init(
         {
-            type: {
-                type: DataTypes.STRING,
-                allowNull: false,
-            },
             district: {
                 type: DataTypes.STRING,
                 allowNull: false,
@@ -44,11 +38,10 @@ module.exports = (sequelize, DataTypes) => {
             alley: {
                 type: DataTypes.INTEGER,
             },
-            houseNumber: {
+            ward: {
                 type: DataTypes.STRING,
-                allowNull: false,
             },
-            description: {
+            houseNumber: {
                 type: DataTypes.STRING,
                 allowNull: false,
             },

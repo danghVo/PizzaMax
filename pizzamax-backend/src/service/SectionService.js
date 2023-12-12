@@ -68,11 +68,11 @@ class SectionService extends Service {
 
                 const formSection = {
                     ...productId,
-                    sectionId: selection.dataValues.id,
+                    sectionId: selection.id,
                     section: section.section || `Choose Your ${this.model.name}`,
                 };
 
-                await juncModel.create(formSection);
+                await this.juncModel.create(formSection);
             });
     }
 
@@ -80,7 +80,11 @@ class SectionService extends Service {
         if (this.validSection(sections)) {
             await this.deleteSection(sections, productId);
             await this.addSection(sections, productId);
-        }
+        } else await this.deleteAllSection(productId);
+    }
+
+    async deleteAllSection(productId) {
+        await this.juncModel.destroy({ where: productId });
     }
 
     async deleteSectionByName(sectionName, productId) {

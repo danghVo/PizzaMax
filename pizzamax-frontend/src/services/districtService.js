@@ -10,5 +10,5 @@ export const getDistricts = async (payload) => {
         params: { depth: 2 },
     });
 
-    return res.districts.map((district) => district.name);
+    return res.districts?.map((district) => district.name);
 };

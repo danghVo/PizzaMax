@@ -6,15 +6,17 @@ const cs = classNames.bind(styles);
 
 const emptyFunction = () => {};
 
-function Selection(
+function Option(
     {
         optionData = [],
         customOptionWrapper,
         customOptionItem,
-        customPosition,
+        customPositionTop,
+        customPositionBottom,
         children,
         className,
         onClose = emptyFunction,
+        handleChooseOption = emptyFunction,
     },
     ref,
 ) {
@@ -25,6 +27,7 @@ function Selection(
     const optionRef = useRef();
 
     useImperativeHandle(ref, () => ({
+        isOpen: openOption,
         closeOption() {
             setOpenOption(false);
         },
@@ -35,20 +38,22 @@ function Selection(
     }));
 
     useEffect(() => {
-        const distanceFromTopToOption = wrapperRef.current.getBoundingClientRect().top;
+        if (openOption) {
+            const distanceFromTopToOption = wrapperRef.current.getBoundingClientRect().top;
 
-        const deviceHeight = window.innerHeight;
-        const wrapperHeight = wrapperRef.current.offsetHeight;
-        const distanceFromOptionToBottom = deviceHeight - distanceFromTopToOption - wrapperHeight;
+            const deviceHeight = window.innerHeight;
+            const wrapperHeight = wrapperRef.current.offsetHeight;
+            const distanceFromOptionToBottom = deviceHeight - distanceFromTopToOption - wrapperHeight;
 
-        const optionListHeight = optionData.length * 34 + 16;
+            const optionListHeight = optionRef.current.offsetHeight;
 
-        setIsPlacementTop(distanceFromOptionToBottom < optionListHeight);
+            setIsPlacementTop(distanceFromOptionToBottom < optionListHeight);
 
-        document.addEventListener('mousedown', handleClickOutSide);
+            document.addEventListener('mousedown', handleClickOutSide);
 
-        return () => document.removeEventListener('mousedown', handleClickOutSide);
-    });
+            return () => document.removeEventListener('mousedown', handleClickOutSide);
+        }
+    }, [openOption]);
 
     const handleClickOutSide = (e) => {
         const selectZone = wrapperRef.current.getBoundingClientRect();
@@ -68,7 +73,8 @@ function Selection(
             }
     };
 
-    const handleCloseOption = () => {
+    const handleClickOption = (item) => {
+        handleChooseOption(item);
         setOpenOption(false);
     };
 
@@ -79,9 +85,11 @@ function Selection(
             <div
                 ref={optionRef}
                 className={cs('options', {
-                    placementTop: isPlacementTop && !customPosition,
+                    placementTop: isPlacementTop && !customPositionTop,
+                    placementBottom: !isPlacementTop && !customPositionBottom,
                     [customOptionWrapper]: customOptionWrapper,
-                    [customPosition]: customPosition,
+                    [customPositionTop]: isPlacementTop && customPositionTop,
+                    [customPositionBottom]: !isPlacementTop && customPositionBottom,
                 })}
             >
                 {openOption && (
@@ -92,9 +100,9 @@ function Selection(
                                     <span
                                         key={index}
                                         className={cs('options-item', { [customOptionItem]: customOptionItem })}
-                                        onClick={handleCloseOption}
+                                        onClick={() => handleClickOption(item)}
                                     >
-                                        {item}
+                                        <span className={cs('options-item-content')}>{item}</span>
                                     </span>
                                 );
                             })
@@ -108,4 +116,4 @@ function Selection(
     );
 }
 
-export default forwardRef(Selection);
+export default forwardRef(Option);

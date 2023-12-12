@@ -1,0 +1,28 @@
+.wrapper {
+    background-color: var(--white);
+    width: 100%;
+    box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
+}
+
+.header {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 600;
+    padding: 8px 0 0;
+    position: relative;
+
+    &::after {
+        content: '';
+        width: 20%;
+        height: 2px;
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+        background-color: var(--text-color);
+    }
+}
+
+.body {
+    padding: 0 16px;
+}

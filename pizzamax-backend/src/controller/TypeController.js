@@ -1,4 +1,4 @@
-const { TypeService } = require('../service');
+const { TypeService, ProductService } = require('../service');
 const Controller = require('./Controller');
 
 class TypeController extends Controller {
@@ -17,35 +17,46 @@ class TypeController extends Controller {
         }
     }
 
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             await TypeService.createType(req.body);
 
-            return res.send('Type is created successfuly');
+            const types = await TypeService.getAllType();
+
+            res.json(types);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async update(req, res) {
+    async update(req, res, next) {
         try {
             const typeId = { id: req.params.id };
 
             await TypeService.updateType(typeId, req.body);
 
-            return res.send('Type is updated successfully');
+            const types = await TypeService.getAllType();
+
+            res.json(types);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             const typeId = { id: req.params.id } || throwError(400, 'Missing type id');
 
-            await TypeService.deletetype(typeId);
+            await ProductService.checkProductsOfTypeIsUse(typeId);
 
-            return res.send('Type id deleted successfully');
+            await TypeService.deleteType(typeId);
+
+            const types = await TypeService.getAllType();
+
+            res.json(types);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }

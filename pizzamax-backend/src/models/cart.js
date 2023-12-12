@@ -7,7 +7,7 @@ module.exports = (sequelize, DataTypes) => {
          * This method is not a part of Sequelize lifecycle.
          * The `models/index` file will call this method automatically.
          */
-        static associate({ User, Detail, Product, Status, Orderway, Address }) {
+        static associate({ User, Detail, Product, Status, Orderway, Address, PaymentWay }) {
             this.belongsTo(User, { foreignKey: 'userId' });
             this.belongsToMany(Product, {
                 through: Detail,
@@ -19,6 +19,7 @@ module.exports = (sequelize, DataTypes) => {
             this.belongsTo(Status, { foreignKey: { name: 'statusId' } });
             this.belongsTo(Orderway, { foreignKey: { name: 'orderwayId', allowNull: true } });
             this.belongsTo(Address, { foreignKey: { name: 'addressId' } });
+            this.belongsTo(PaymentWay, { foreignKey: { name: 'paymentwayId' } });
         }
 
         toJSON() {
@@ -27,7 +28,6 @@ module.exports = (sequelize, DataTypes) => {
                 ...cart,
                 userId: undefined,
                 UserId: undefined,
-                statusId: undefined,
                 StatusId: undefined,
                 Status: undefined,
                 OrderwayId: undefined,
@@ -39,7 +39,7 @@ module.exports = (sequelize, DataTypes) => {
                 Products: undefined,
                 orderway: cart.Orderways?.name || undefined,
                 status: cart.Status?.name,
-                products: cart?.Products,
+                products: cart?.Products || [],
                 subTotal: parseInt(cart.subTotal),
                 total: parseInt(cart.total),
                 deliveryCharge: parseInt(cart.deliveryCharge),
@@ -57,7 +57,7 @@ module.exports = (sequelize, DataTypes) => {
             deliveryCharge: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                defaultValue: '15000',
+                defaultValue: '0',
             },
             subTotal: {
                 type: DataTypes.STRING,

@@ -15,8 +15,8 @@ class S3Service {
         });
     }
 
-    async saveImage(image) {
-        const imageName = randomBytes();
+    async saveImage(image, imageNameExist = null) {
+        const imageName = imageNameExist || randomBytes();
 
         const inputObject = {
             Bucket: process.env.BUCKET_NAME,

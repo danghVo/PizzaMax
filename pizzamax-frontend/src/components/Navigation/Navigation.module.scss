@@ -1,0 +1,9 @@
+.wrapper {
+    padding: 0px 20px;
+}
+
+.path {
+    &.current {
+        color: var(--primary-color);
+    }
+}

@@ -1,0 +1,15 @@
+.wrapper {
+    margin-top: 24px;
+    padding-bottom: 16px;
+}
+
+.price-item {
+    margin-top: 8px;
+    font-size: 1.7rem;
+    display: flex;
+    justify-content: space-between;
+
+    .price {
+        font-weight: 600;
+    }
+}

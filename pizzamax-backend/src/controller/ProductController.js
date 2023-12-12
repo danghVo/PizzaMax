@@ -33,38 +33,47 @@ class ProductController extends Controller {
         }
     }
 
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             const image = req.file;
 
             await ProductService.createProduct(req.body, image);
 
-            return res.send('Product was created successfuly');
+            const productList = await ProductService.getAllProduct();
+
+            res.json(productList);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async update(req, res) {
+    async update(req, res, next) {
         try {
             const productId = { id: req.params.id };
             const image = req.file;
 
             await ProductService.updateProduct(productId, req.body, image);
 
-            return res.send('Product was updated successfully');
+            const productList = await ProductService.getAllProduct();
+
+            res.json(productList);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             const productId = { id: req.params.id } || throwError(400, 'Missing product id');
 
             await ProductService.deleteProduct(productId);
 
-            return res.send('Product was deleted successfully');
+            const productList = await ProductService.getAllProduct();
+
+            res.json(productList);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
@@ -103,6 +112,21 @@ class ProductController extends Controller {
             await ProductService.removeFavor(user, productId);
 
             return res.send('Revmove favorite product successfully');
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
+    async toggleHideProduct(req, res, next) {
+        try {
+            const productId = req.params.id || throwError(400, 'Missing product id');
+
+            await ProductService.toggleHideProduct(productId);
+
+            const productList = await ProductService.getAllProduct();
+
+            res.json(productList);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }

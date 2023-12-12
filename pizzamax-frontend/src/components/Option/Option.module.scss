@@ -6,20 +6,24 @@
 .options:has(.options-item) {
     width: 100%;
     min-width: 290px;
+    height: fit-content;
 
     border-radius: 25px;
 
     position: absolute;
     right: 0;
     left: 0;
-    top: 40px;
     z-index: 1000;
 
     overflow: hidden;
 
     box-shadow: rgba(0, 0, 0, 0.2) 0px 2px 8px 0px;
+    &.placementBottom {
+        top: 100%;
+    }
+
     &.placementTop {
-        top: -287px;
+        bottom: 100%;
     }
 }
 
@@ -46,6 +50,11 @@
     color: #24282b;
 
     cursor: pointer;
+
+    .options-item-content {
+        // padding: 0 16px;
+        width: 100%;
+    }
 
     &:hover {
         background-color: #0000000a;

@@ -17,7 +17,7 @@ class AuthController {
                 res.locals.user = userValid;
                 next();
             } else {
-                throwError(401, 'wrong password');
+                throwError(401, 'Sai mật khẩu');
             }
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
@@ -28,12 +28,12 @@ class AuthController {
         try {
             const user = res.locals.user;
             const accessToken = generateToken(
-                { phoneNumber: user.phoneNumber, password: user.password },
+                { phoneNumber: user.phoneNumber, password: user.password, role: user.role },
                 user.role == 'admin' ? process.env.ADMIN_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET,
             );
 
             const refreshToken = generateToken(
-                { phoneNumber: user.phoneNumber, password: user.password },
+                { phoneNumber: user.phoneNumber, password: user.password, role: user.role },
                 process.env.REFRESH_TOKEN_SECRET,
                 '1d',
             );
@@ -72,11 +72,10 @@ class AuthController {
 
             jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (error, decoded) => {
                 if (error) throwError(403, 'Session expired');
+
                 const accessToken = generateToken(
-                    { phoneNumber: decoded.phoneNumber, password: decoded.password },
-                    decoded.phoneNumber == '0000000000'
-                        ? process.env.ADMIN_TOKEN_SECRET
-                        : process.env.ACCESS_TOKEN_SECRET,
+                    { phoneNumber: decoded.phoneNumber, password: decoded.password, role: decoded.role },
+                    decoded.role == 'admin' ? process.env.ADMIN_TOKEN_SECRET : process.env.ACCESS_TOKEN_SECRET,
                 );
 
                 res.cookie(
@@ -84,7 +83,6 @@ class AuthController {
                     { accessToken, refreshToken },
                     {
                         httpOnly: true,
-                        // Secure: true,
                     },
                 );
             });

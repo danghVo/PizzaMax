@@ -6,6 +6,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    &.larger {
+        width: 700px;
+    }
 }
 
 .modal-logo {
@@ -88,6 +92,7 @@
 .infor-selection {
     margin-top: 10px;
     font-size: 1.4rem;
+    border: 1px solid black;
 }
 
 .infor-input {
@@ -102,7 +107,8 @@
     width: 100%;
 }
 
-.infor-city {
+.infor-city,
+.infor-district {
     font-size: 1.4rem;
 }
 

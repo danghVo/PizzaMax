@@ -12,7 +12,7 @@ class Service {
         return await this.model.create(payload, include && { include });
     }
 
-    async getAll(subModel = {}) {
+    async getAll(subModel = undefined) {
         return await this.model.findAll({ include: subModel });
     }
 

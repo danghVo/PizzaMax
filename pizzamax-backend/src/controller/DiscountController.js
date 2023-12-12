@@ -1,4 +1,4 @@
-const { DiscountService } = require('../service');
+const { DiscountService, ProductService } = require('../service');
 const throwError = require('../utils/throwError');
 
 class DiscountController {
@@ -8,9 +8,9 @@ class DiscountController {
 
     async getAll(req, res) {
         try {
-            const discounts = await DiscountService.getAll();
+            const discounts = await DiscountService.getAllDetail();
 
-            return res.json(addresses);
+            return res.json(discounts);
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
@@ -18,21 +18,26 @@ class DiscountController {
 
     async createDiscount(req, res) {
         try {
-            const discount = await DiscountService.createDiscount(req.body);
+            await DiscountService.createDiscount(req.body);
 
-            return res.json(discount);
+            const discounts = await DiscountService.getAllDetail();
+
+            return res.json(discounts);
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async updateDiscount(req, res) {
+    async updateDiscount(req, res, next) {
         try {
             const discountId = req.params.id;
 
-            const discount = await DiscountService.updateDiscount(discountId, req.body);
+            await DiscountService.updateDiscount(discountId, req.body);
 
-            res.json(discount);
+            const discounts = await DiscountService.getAllDetail();
+
+            res.json(discounts);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
@@ -42,9 +47,12 @@ class DiscountController {
         try {
             const discountId = req.params.id;
 
+            await ProductService.update({ discountId }, { discountId: null });
             await DiscountService.deleteDiscount(discountId);
 
-            res.status(200).send('Deleted discount successfully');
+            const discounts = await DiscountService.getAllDetail();
+
+            return res.json(discounts);
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }

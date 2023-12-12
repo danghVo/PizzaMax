@@ -1,0 +1,135 @@
+.disc-item {
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.disc-item-header {
+    padding: 4px 20px;
+    min-height: 48px;
+    // padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(233, 236, 239);
+    border-radius: 50px;
+
+    &.selected {
+        background-color: rgb(139, 195, 74);
+    }
+
+    .arrow-icon {
+        border-radius: 50%;
+        width: 2rem;
+        height: 2rem;
+        background-color: #0000008a;
+
+        &.up {
+            rotate: 180deg;
+        }
+    }
+}
+
+.warning {
+    background-color: rgb(220, 53, 69);
+
+    .disc-item-title {
+        color: var(--white);
+    }
+
+    .disc-item-status {
+        border: 2px solid rgb(233, 236, 239);
+    }
+}
+
+.disc-item-status {
+    height: fit-content;
+    color: var(--white);
+    padding: 0 8px;
+    margin: 0 20px;
+    font-size: 1.4rem;
+    background-color: rgb(220, 53, 69);
+    border-radius: 6px;
+
+    &.selected {
+        background-color: rgb(139, 195, 74);
+    }
+}
+
+.disc-item-title {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.disc-item-selection {
+    display: flex;
+    align-items: center;
+    color: black;
+    height: 48px;
+    padding: 4px 16px;
+    margin: 8px 0;
+    font-size: 1.4rem;
+    cursor: pointer;
+
+    &.selected {
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 30px;
+    }
+}
+
+.disc-item-name {
+    width: 100%;
+}
+
+.disc-item-price {
+    text-align: end;
+}
+
+.disc-item-selection .disc-item-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    margin-right: 4px;
+
+    &:hover {
+        background-color: rgba(239, 55, 6, 0.04);
+        border: none;
+    }
+}
+
+.disc-item-icon-outline {
+    color: rgb(131, 143, 155);
+    width: 24px;
+    height: 24px;
+    border: 3px solid currentColor;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:has(.disc-item-icon-inner) {
+        border-color: rgb(239, 55, 6);
+    }
+}
+
+.disc-item-icon-inner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: none;
+
+    background-color: rgb(239, 55, 6);
+}
+
+.selected {
+    .disc-item-icon-outline {
+        border: 3px solid white;
+    }
+
+    .disc-item-icon-inner {
+        background-color: white;
+    }
+}

@@ -59,6 +59,14 @@ module.exports = {
                     as: 'addressId',
                 },
             },
+            paymentwayId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: "Paymentways",
+                    key: 'id',
+                    as: 'paymentwayId'
+                }
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

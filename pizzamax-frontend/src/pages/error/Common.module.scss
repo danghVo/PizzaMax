@@ -1,0 +1,25 @@
+.wrapper {
+    margin: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.header {
+    color: var(--primary-color);
+    font-size: 3.2rem;
+    font-weight: 700;
+    margin-bottom: 32px;
+}
+
+.body,
+.recommend {
+    margin-bottom: 8px;
+    color: rgb(110, 109, 122);
+}
+
+.link {
+    margin-left: 6px;
+    color: black;
+}

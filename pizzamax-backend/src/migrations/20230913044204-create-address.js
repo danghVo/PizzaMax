@@ -18,18 +18,6 @@ module.exports = {
                     as: 'cityId',
                 },
             },
-            userId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: 'users',
-                    key: 'id',
-                    as: 'userId',
-                },
-            },
-            type: {
-                type: Sequelize.STRING,
-                allowNull: false,
-            },
             street: {
                 type: Sequelize.STRING,
                 allowNull: false,
@@ -38,11 +26,11 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            desciption: {
-                type: Sequelize.STRING,
-            },
             alley: {
                 type: Sequelize.INTEGER,
+            },
+            ward: {
+                type: Sequelize.STRING,
             },
             houseNumber: {
                 type: Sequelize.STRING,

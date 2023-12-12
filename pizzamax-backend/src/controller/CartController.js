@@ -1,5 +1,5 @@
 const throwError = require('../utils/throwError');
-const { CartService } = require('../service');
+const { CartService, UserService, DetailService } = require('../service');
 const Controller = require('./Controller');
 
 class CartController extends Controller {
@@ -57,13 +57,62 @@ class CartController extends Controller {
         }
     }
 
+    async updateDeliveryCharge(req, res) {
+        try {
+            const cart = res.locals.cart;
+
+            const newCart = await CartService.updateDeliveryCharge(cart, req.body);
+
+            return res.json(newCart);
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
     async checkout(req, res) {
         try {
             const cart = res.locals.cart;
 
-            const message = await CartService.checkout(cart, req.body);
+            const user = await UserService.find({ id: cart.userId });
+
+            const message = await CartService.checkout(cart, user, req.body);
 
             return res.send(message);
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
+    async getAllCart(req, res) {
+        try {
+            const allCart = await CartService.getAllCart();
+
+            return res.json(allCart);
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
+    async updateCartStatus(req, res, next) {
+        try {
+            const cart = res.locals.cart;
+
+            await CartService.updateCartStatus(cart, req.body);
+
+            const allCart = await CartService.getAllCart();
+
+            res.json(allCart);
+            next();
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
+    async getAllDetail(req, res) {
+        try {
+            const allDetail = await DetailService.getAllDetail();
+
+            return res.json(allDetail);
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }

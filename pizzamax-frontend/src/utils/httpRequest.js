@@ -5,11 +5,6 @@ const httpRequest = axios.create({
     withCredentials: true,
 });
 
-// httpRequest.interceptors.request.use((config) => {
-//     // if(document.cookie)
-//     return config;
-// });
-
 httpRequest.interceptors.response.use(
     (respone) => {
         return respone;
@@ -21,6 +16,12 @@ httpRequest.interceptors.response.use(
             prevRequest.sent = true;
             return await httpRequest(prevRequest);
         } else if (error.response.data.error === 'Session expired') {
+            alert('Phiên đăng nhập hết hạn');
+            window.location.href = '/';
+            return await httpRequest.get('/auth/logout');
+        } else if (error.response.data.error === 'invalid signature') {
+            alert('Phiên đăng nhập hết hạn');
+            window.location.href = '/';
             return await httpRequest.get('/auth/logout');
         }
 

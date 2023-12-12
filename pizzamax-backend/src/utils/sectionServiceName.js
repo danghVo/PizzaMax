@@ -18,3 +18,5 @@ module.exports = function sectionServiceName(sectionType) {
         }
     }
 };
+
+const throwError = require('./throwError');

@@ -13,7 +13,7 @@ class AuthService extends Service {
             return throwError(404, 'Not found phone number');
         }
 
-        if (user.dataValues.password !== payload.password) {
+        if (user.password !== payload.password) {
             return false;
         }
 

@@ -1,4 +1,4 @@
-const { Product, Type, Crust, Size, Flavor, Drink, Discount } = require('../models');
+const { Product, Type, Crust, Size, Flavor, Drink, Discount, Time } = require('../models');
 
 const throwError = require('../utils/throwError');
 const sectionServiceName = require('../utils/sectionServiceName');
@@ -13,6 +13,7 @@ const CrustService = require('./CrustService');
 const FavoriteService = require('./FavoriteService');
 const S3Service = require('./S3Service');
 const DiscountService = require('./DiscountService');
+const DetailService = require('./DetailService');
 
 class ProductService extends Service {
     constructor() {
@@ -32,31 +33,38 @@ class ProductService extends Service {
         return { ...product, description: payload?.description || '', signature: payload?.signature || false };
     }
 
-    async checkRelationExist(data, relationService) {
-        const dataExist = await relationService.find({ id: data });
+    async checkRelationExist(data, field, relationService) {
+        const dataExist = await relationService.find({ [field]: data });
         if (dataExist) return dataExist.id;
         else throwError(404, 'Not found ' + data);
     }
 
     async getAllProduct() {
-        let products = await this.getAll([Type, Size, Flavor, Crust, Drink, Discount]);
+        let products = await this.getAll([{ model: Type, include: [Time] }, Size, Flavor, Crust, Drink, Discount]);
 
         for await (const product of products) {
             product.image = await this.getImageProduct(product);
-            const discount = await product.getDiscount();
-            if (!checkDiscountAvail(discount)) {
-                product.dataValues.Discount = undefined;
-            }
         }
 
         return products;
     }
 
     async getImageProduct(product) {
-        const imageName = product.getDataValue('image');
+        const imageName = product.image;
         const url = await S3Service.getImage(imageName);
 
         return url;
+    }
+
+    async checkProductsOfTypeIsUse(typeId) {
+        const productsOfType = await this.getAllBy({ typeId: typeId.id });
+
+        for await (const product of productsOfType) {
+            const isUse = await DetailService.checkProductIsUsed(product.id);
+            if (isUse) {
+                return throwError(409, 'Đang được sử dụng');
+            }
+        }
     }
 
     async createProduct({ type, discount, crust, flavor, size, drink, ...payload }, image) {
@@ -64,11 +72,11 @@ class ProductService extends Service {
         let typeId = 12;
         let discountId = null;
         if (type) {
-            typeId = await this.checkRelationExist(type, TypeService);
+            typeId = await this.checkRelationExist(type, 'name', TypeService);
         }
 
         if (discount) {
-            discountId = await this.checkRelationExist(discount, DiscountService);
+            discountId = await this.checkRelationExist(discount, 'saleoff', DiscountService);
         }
 
         const isExist = await this.find(product);
@@ -93,29 +101,29 @@ class ProductService extends Service {
         }
     }
 
-    async updateProduct(productId, { type, discount, crust, flavor, size, drink, ...payload }, image) {
+    async updateProduct(productId, { type, discount, crust, flavor, size, drink, description, ...payload }, image) {
         const productExist = await this.find(productId);
 
         if (productExist) {
             const productId = productExist.dataValues.id;
-            if (payload.description) {
-                productExist.description = payload.description;
+            if (description) {
+                productExist.description = description;
             }
 
             if (type) {
-                productExist.typeId = await this.checkRelationExist(type, TypeService);
+                productExist.typeId = await this.checkRelationExist(type, 'name', TypeService);
             }
 
             if (discount) {
-                productExist.discountId = await this.checkRelationExist(discount, DiscountService);
+                productExist.discountId = await this.checkRelationExist(discount, 'saleoff', DiscountService);
             }
 
             if (image) {
-                productExist.image = await S3Service.saveImage(image);
+                // productExist.image = await S3Service.saveImage(image);
             }
 
             Object.keys(payload).forEach((key) => {
-                if (productExist[key]) {
+                if (typeof productExist[key] !== 'undefined') {
                     productExist[key] = payload[key];
                 } else throwError(404, 'Not found ' + key);
             });
@@ -125,21 +133,27 @@ class ProductService extends Service {
             await FlavorService.updateSection(flavor, { productId });
             await SizeService.updateSection(size, { productId });
             await DrinkService.updateSection(drink, { productId });
-        } else throwError(404, 'Product is not exist');
+        } else throwError(404, 'Sản phẩm không tồn tại');
     }
 
     async deleteProduct(productId) {
         const productExist = await this.find(productId);
 
+        const isProductUsed = await DetailService.checkProductIsUsed(productExist.id);
+
+        if (isProductUsed) {
+            return throwError(409, 'Đang được sử dụng');
+        }
+
         if (productExist) {
+            await S3Service.deleteImage(productExist.image);
+            await CrustService.deleteRelation({ productId: productExist.id });
+            await FlavorService.deleteRelation({ productId: productExist.id });
+            await SizeService.deleteRelation({ productId: productExist.id });
+            await DrinkService.deleteRelation({ productId: productExist.id });
             await this.delete(productId);
-            await S3Service.deleteImage(productExist.getDataValue('image'));
-            await this.deleteRelation({ productId: productId.id });
-            await this.deleteRelation({ productId: productId.id });
-            await this.deleteRelation({ productId: productId.id });
-            await this.deleteRelation({ productId: productId.id });
             return;
-        } else throwError(404, 'Product doesnt exist');
+        } else throwError(404, 'Sản phẩm không tồn tại');
     }
 
     async deleteSection(productId, payload) {
@@ -154,14 +168,22 @@ class ProductService extends Service {
 
         if (productExist) {
             await FavoriteService.create({ userId: user.getDataValue('id'), productId });
-        } else throwError(404, 'Product not exist');
+        } else throwError(404, 'Sản phẩm không tồn tại');
     }
 
     async removeFavor(user, productId) {
         const productExist = await this.find({ id: productId });
         if (productExist) {
             await FavoriteService.delete({ userId: user.getDataValue('id'), productId });
-        } else throwError(404, 'Product not exist');
+        } else throwError(404, 'Sản phẩm không tồn tại');
+    }
+
+    async toggleHideProduct(productId) {
+        const productExist = await this.find({ id: productId });
+
+        if (productExist) {
+            await this.update({ id: productId }, { hide: !productExist.hide });
+        } else throwError(404, 'Sản phẩm không tồn tại');
     }
 }
 

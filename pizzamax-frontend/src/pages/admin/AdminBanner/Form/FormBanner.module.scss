@@ -1,0 +1,112 @@
+.form {
+    width: 35%;
+    padding: 12px;
+    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+
+    .close {
+        position: absolute;
+        right: 16px;
+        cursor: pointer;
+    }
+}
+
+.form-inner {
+    margin-bottom: 32px;
+}
+
+.error-message {
+    color: rgb(95, 33, 32);
+    background-color: rgb(253, 237, 237);
+    padding: 4px 12px;
+    padding-left: 32px;
+
+    border-radius: 30px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+
+    .valid-icon {
+        margin-right: 12px;
+        fill: rgb(239, 83, 80);
+    }
+}
+
+.form-title {
+    text-transform: uppercase;
+    text-align: center;
+    color: var(--primary-color);
+    font-weight: 700;
+    font-size: 3.2rem;
+    margin-bottom: 8px;
+}
+
+.form-input-wrapper {
+    position: relative;
+
+    .preview-img {
+        width: 100px;
+        padding: 12px;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        background-color: white;
+        position: absolute;
+        top: 90px;
+        right: 0;
+        left: 0;
+        margin: 0 auto;
+        display: none;
+        z-index: 10;
+        display: none;
+        justify-content: center;
+
+        &::before {
+            content: '';
+            border-width: 12px 12px;
+            border-color: transparent;
+            border-bottom-color: rgb(255, 255, 255);
+            position: absolute;
+            top: -22px;
+            right: 8px;
+        }
+    }
+
+    &:hover .preview-img {
+        display: flex;
+    }
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 50px;
+    margin-bottom: 12px;
+    font-weight: 400;
+    position: relative;
+    background-color: white;
+
+    &:hover {
+        border: 1px solid rgb(36, 40, 43);
+    }
+
+    &:focus {
+        border: 2px solid var(--primary-color);
+    }
+
+    &.long-text {
+        min-height: 150px;
+        border-radius: 0;
+        resize: none;
+    }
+}
+
+.submit-btn {
+    width: 95%;
+    padding: 12px;
+    margin: 0 auto;
+    font-size: 1.6rem;
+    // display: none;
+}

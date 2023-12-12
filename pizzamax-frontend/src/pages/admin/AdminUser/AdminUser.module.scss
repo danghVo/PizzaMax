@@ -1,0 +1,144 @@
+.wrapper {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+    overflow-x: hidden;
+}
+
+.header {
+    color: var(--primary-color);
+    font-size: 3.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -12px;
+    margin-bottom: 12px;
+    position: relative;
+
+    .text {
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .view-list {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: white;
+        padding: 8px 0;
+        overflow: hidden;
+
+        .view-item {
+            font-size: 1.6rem;
+            padding: 4px 12px;
+            cursor: pointer;
+            color: var(--text-color);
+
+            &.active,
+            &:hover {
+                color: white;
+                background-color: var(--primary-color);
+            }
+        }
+    }
+}
+
+.inner {
+    background-color: #eeeeee;
+    min-height: 100%;
+    width: 100%;
+    padding: 36px;
+}
+
+.filter-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 24px 0;
+}
+
+.search-wrapper {
+    margin-bottom: -20px;
+}
+
+.action-btn {
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .gap {
+        margin-right: 12px;
+    }
+}
+
+.action-btn {
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+// cart view
+
+.user-cart {
+    flex: 1;
+    max-height: 65%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    background-color: white;
+    padding: 32px 8px 0px 32px;
+    margin: 12px 0;
+    border-radius: 10px;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+
+    .header {
+        font-weight: 700;
+        font-size: 2rem;
+        width: 100%;
+        margin-bottom: 16px;
+        background-color: white;
+    }
+
+    .empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.6rem;
+        font-weight: 600;
+        margin-top: 100px;
+    }
+}
+
+.add-btn-wrapper {
+    margin-right: 32px;
+    margin-left: auto;
+    cursor: pointer;
+    display: flex;
+    position: relative;
+
+    .input {
+        padding: 4px 12px;
+
+        border: 1px solid black;
+        border-radius: 10px;
+        margin-right: 8px;
+    }
+}
+
+.add-btn {
+    border: 2px solid black;
+    padding: 8px 12px;
+    font-weight: 500;
+    margin: 0 4px;
+    max-height: 40px;
+    margin-top: auto;
+
+    &:hover {
+        background-color: black;
+        color: white;
+    }
+}

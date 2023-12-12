@@ -1,0 +1,113 @@
+.wrapper {
+    display: flex;
+    height: 100vh;
+    width: 100%;
+}
+
+.sideBar {
+    width: 20%;
+    border-right: 1px solid #ccc;
+    padding: 20px;
+
+    .header {
+        font-size: 1.8rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 24px;
+    }
+
+    .sideBar-sub-item,
+    .sideBar-item {
+        margin: 12px 0;
+        padding: 12px;
+        font-weight: 500;
+        border-radius: 10px;
+        text-transform: uppercase;
+        background-color: #fff;
+        cursor: pointer;
+        position: relative;
+
+        &.active {
+            background-color: black;
+            color: white;
+        }
+    }
+
+    .sub-item-list {
+        margin-bottom: 32px;
+    }
+
+    .sideBar-sub-item {
+        margin-left: 24px;
+        text-transform: none;
+
+        &.active::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-left-style: solid;
+            border-color: transparent;
+            border-left-color: black;
+            border-width: 12px 12px;
+        }
+    }
+}
+
+.chart-wrapper {
+    width: 80%;
+    padding: 16px;
+    display: flex;
+    position: relative;
+
+    .empty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        font-size: 3rem;
+    }
+
+    .chart {
+        margin: 12px;
+
+        .tool-tip {
+            .item {
+                display: flex;
+
+                &.black {
+                    color: var(--text-color);
+                }
+            }
+
+            .value {
+                margin-left: 4px;
+            }
+        }
+    }
+
+    .special {
+        position: absolute;
+        right: 16px;
+        top: 32px;
+        width: 200px;
+        padding: 0 12px;
+        background-color: white;
+        height: 130px;
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+
+        .header {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .value {
+            font-weight: 500;
+        }
+    }
+}

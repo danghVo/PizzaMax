@@ -1,6 +1,7 @@
 'use strict';
 const { Model, UUIDV4 } = require('sequelize');
 const uniqueValue = require('../utils/uniqueValue');
+const moment = require('moment');
 
 module.exports = (sequelize, DataTypes) => {
     class Product extends Model {
@@ -115,6 +116,11 @@ module.exports = (sequelize, DataTypes) => {
             description: {
                 type: DataTypes.STRING,
                 allowNull: true,
+            },
+            hide: {
+                type: DataTypes.BOOLEAN,
+                allowNull: true,
+                defaultValue: false,
             },
         },
         {

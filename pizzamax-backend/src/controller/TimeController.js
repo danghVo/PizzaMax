@@ -1,5 +1,5 @@
 const throwError = require('../utils/throwError');
-const { TimeService } = require('../service');
+const { TimeService, TypeService } = require('../service');
 const Controller = require('./Controller');
 
 class TimeController extends Controller {
@@ -18,35 +18,40 @@ class TimeController extends Controller {
         }
     }
 
-    async create(req, res) {
+    async create(req, res, next) {
         try {
             await TimeService.createTime(req.body);
 
-            return res.send('Time is created successfuly');
+            const times = await TimeService.getAllTime();
+            res.json(times);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async update(req, res) {
+    async update(req, res, next) {
         try {
             const timeId = req.params;
 
             await TimeService.updateTime(timeId, req.body);
-
-            return res.send('Time is updated successfully');
+            const times = await TimeService.getAllTime();
+            res.json(times);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async delete(req, res) {
+    async delete(req, res, next) {
         try {
             const timeId = req.params || throwError(400, 'Missing time id');
 
-            await TimeService.deleteTime(timeId);
+            await TimeService.deleteTime(timeId, TypeService);
 
-            return res.send('Time id deleted successfully');
+            const times = await TimeService.getAllTime();
+            res.json(times);
+            next();
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }

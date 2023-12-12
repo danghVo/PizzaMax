@@ -10,12 +10,12 @@ class SelectionService extends Service {
         const selections = await detail.getSelections();
         let count = selectionName.length;
         selections.forEach((selection) => {
-            if (selectionName.includes(selection.getDataValue('name'))) {
+            if (selectionName.includes(selection.name)) {
                 count--;
             }
         });
 
-        return count === 0 ? true : false;
+        return count === 0;
     }
 }
 

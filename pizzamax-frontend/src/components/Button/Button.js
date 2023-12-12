@@ -2,8 +2,12 @@ import classNames from 'classnames/bind';
 import styles from './Button.module.scss';
 import { forwardRef, useEffect, useRef, useState, useImperativeHandle } from 'react';
 import { AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 import ButtonAnimation from './ButtonAnimation';
+import { userSelector } from '~/store/user';
+import { useDispatch, useSelector } from 'react-redux';
+import { systemSlice } from '~/store/system';
 
 const cs = classNames.bind(styles);
 
@@ -11,7 +15,7 @@ function Button(
     {
         children,
         header,
-        to,
+        link,
         href,
         type = 'text',
         theme = 'primary',
@@ -19,8 +23,10 @@ function Button(
         shadow,
         icon,
         className,
+        requireLogin = false,
         hover = false,
         animation: isAnimation = false,
+        customAnimation,
         handleClick = () => {},
         ...passprop
     },
@@ -28,6 +34,8 @@ function Button(
 ) {
     const [animation, setAnimation] = useState([]);
     const [animationEnd, setAnimationEnd] = useState(false);
+    const user = useSelector(userSelector.user);
+    const dispatch = useDispatch();
 
     const buttonRef = useRef();
 
@@ -39,9 +47,9 @@ function Button(
         ...passprop,
     };
 
-    if (to) {
-        Tag = 'link';
-        props.to = to;
+    if (link) {
+        Tag = Link;
+        props.to = link;
     }
 
     if (href) {
@@ -92,7 +100,13 @@ function Button(
 
     const handleMouseUp = (e) => {
         setAnimationEnd(true);
-        handleClick();
+    };
+
+    const handleClickBtn = (e) => {
+        if (requireLogin && !user) {
+            dispatch(systemSlice.actions.requireLogin(true));
+        } else handleClick(e);
+        // handleClick(e);
     };
 
     const handleMouseLeave = () => {
@@ -106,19 +120,20 @@ function Button(
             onMouseUp={handleMouseUp}
             onMouseDown={handleMouseDown}
             onMouseLeave={handleMouseLeave}
+            onClick={handleClickBtn}
             className={classNames}
         >
             {icon && <span className={cs('icon-content')}>{icon}</span>}
             {type === 'icon' ? (
                 ''
             ) : (
-                <span className={cs('content')}>
+                <div className={cs('content')}>
                     {header && <span className={cs('header')}>{header}</span>}
-                    <span className={cs('title')}>{children}</span>
-                </span>
+                    <div className={cs('title')}>{children}</div>
+                </div>
             )}
             {isAnimation && (
-                <span className={cs('animation')}>
+                <span className={cs('animation', { [customAnimation]: customAnimation })}>
                     <AnimatePresence>{animation}</AnimatePresence>
                 </span>
             )}

@@ -1,0 +1,45 @@
+.wrapper {
+    background-color: white;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+    border-radius: 4px;
+
+    min-height: 50px;
+    width: fit-content;
+
+    position: fixed;
+    top: 120px;
+    right: 20px;
+    padding: 8px 16px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1001;
+
+    &.error {
+        --error-color: rgb(255, 15, 15);
+
+        color: var(--error-color);
+        border: 1px solid var(--error-color);
+        fill: var(--error-color);
+    }
+
+    &.success {
+        --success-color: rgb(0, 149, 0);
+
+        color: var(--success-color);
+        border: 1px solid var(--success-color);
+        fill: var(--success-color);
+    }
+}
+
+.message {
+    white-space: nowrap;
+}
+
+.icon {
+    margin-right: 8px;
+    width: 2rem;
+    height: 2rem;
+    flex: 1;
+}

@@ -1,0 +1,117 @@
+.wrapper {
+    min-height: 480px;
+
+    display: flex;
+    margin: 20px 0;
+    position: relative;
+}
+
+.img {
+    width: 400px;
+    height: 400px;
+    border-radius: 24px;
+}
+
+.zoom-icon {
+    margin: 16px auto 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    cursor: pointer;
+    opacity: 0.5;
+
+    &.active {
+        opacity: 1;
+    }
+}
+
+.product-saleOff {
+    position: absolute;
+    left: -10px;
+    top: 20px;
+    font-size: 1.44rem;
+    color: black;
+    padding: 6px 12px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 20px;
+    font-weight: 600;
+    background-color: #fbc000;
+}
+
+// Content
+.content {
+    flex: 1 1 0;
+    padding: 0 28px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 8px;
+
+    .name {
+        font-weight: 700;
+        font-size: 34px;
+    }
+
+    .description {
+        color: rgb(136, 136, 136);
+        max-width: 700px;
+        margin: 6px 0;
+    }
+
+    .like-btn {
+        width: 20px;
+        height: 20px;
+        padding: 20px;
+    }
+}
+
+// action
+.action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .action-btn {
+        display: flex;
+        align-items: center;
+        // justify-content: space-between;
+    }
+
+    .quantity-btn {
+        width: 40px;
+        height: 40px;
+    }
+
+    .quantity {
+        height: 40px;
+        width: 60px;
+        padding: 0 12px;
+        border: 1px solid rgba(0, 0, 0, 0.23);
+        text-align: center;
+        line-height: 40px;
+        border-radius: 50px;
+        margin: 0 8px;
+    }
+}
+
+.addToCart-btn {
+    width: fit-content;
+
+    .addToCart-content {
+        display: flex;
+        justify-content: space-between;
+        width: 100%;
+
+        .price {
+            margin-right: 60px;
+        }
+    }
+}

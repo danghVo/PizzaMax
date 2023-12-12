@@ -1,26 +1,25 @@
 import classNames from 'classnames/bind';
 import { useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import Modal from '~/components/Modal';
 import Button from '~/components/Button';
+import * as Icons from '~/components/Icons';
 import headerStyles from '../Header.module.scss';
 import modalStyles from './CartModal.module.scss';
 import images from '~/assets/images';
-import * as Icons from '~/components/Icons';
-import { cartSlice, cartSelector, cartThunk } from '~/store/cart';
-
+import { cartSelector } from '~/store/cart';
+import ProductList from '~/components/ProductList';
+import { addressSelector } from '~/store/address';
 const headerCs = classNames.bind(headerStyles);
 const modalCs = classNames.bind(modalStyles);
 
-function Cart() {
+function Cart({ user }) {
     const [openModal, setOpenModal] = useState(false);
 
-    const dispatch = useDispatch();
-
     const cart = useSelector(cartSelector.cart);
-
+    const currentOrderType = useSelector(addressSelector.orderType);
     const handleCloseModal = () => {
         setOpenModal(false);
     };
@@ -29,25 +28,11 @@ function Cart() {
         setOpenModal(true);
     };
 
-    const handleIncreaseQuantity = (product) => {
-        dispatch(cartThunk.increase(product));
-    };
-
-    const handleDecreaseQuantity = (product) => {
-        if (product.detail.quantity === 1) {
-            dispatch(cartThunk.removeFromCart(product));
-        } else dispatch(cartThunk.decrease(product));
-    };
-
-    const handleDeleteProduct = (product) => {
-        dispatch(cartThunk.removeFromCart(product));
-    };
-
     return (
         <>
             <Button handleClick={handleOpenModal} animation shadow icon={<Icons.cart />}>
                 <span className={headerCs('cart-quantity')}>{cart.totalQuantity}</span>
-                View Cart
+                Giỏ Hàng
             </Button>
             <AnimatePresence>
                 {openModal && (
@@ -60,144 +45,66 @@ function Cart() {
                         noCloseBtn
                         onClose={handleCloseModal}
                     >
-                        <h3 className={modalCs('modal-title')}>Your Cart</h3>
+                        <h3 className={modalCs('modal-title')}>Giỏ Hàng</h3>
 
                         <div className={modalCs('orders')}>
                             {cart.products.length > 0 ? (
                                 <>
-                                    <div className={modalCs('orders-list')}>
-                                        {cart.products.map((product, index) => (
-                                            <div key={index} className={modalCs('product')}>
-                                                <img className={modalCs('product-img')} src={product.image} alt="" />
-                                                <div className={modalCs('product-quantity')}>
-                                                    {product.detail.quantity}
-                                                </div>
-                                                {product.detail.saleOff && (
-                                                    <div className={modalCs('product-saleOff')}>
-                                                        -{product.detail.saleOff}%
-                                                    </div>
-                                                )}
-                                                <div className={modalCs('product-content')}>
-                                                    <div className={modalCs('product-title')}>{product.name}</div>
-                                                    <div className={modalCs('product-des')}>{product.description}</div>
-                                                    <div className={modalCs('product-discOptions')}>
-                                                        {product.Selection.map((disc, index) => (
-                                                            <div key={index} className={modalCs('product-disc')}>
-                                                                <div className={modalCs('product-disc-title')}>
-                                                                    {disc.section}
-                                                                </div>
-
-                                                                <div className={modalCs('product-disc-selection')}>
-                                                                    {disc.name}
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-
-                                                    <div className={modalCs('product-disc-actions')}>
-                                                        <div className={modalCs('product-disc-price')}>
-                                                            {product.detail.saleOff && (
-                                                                <span className={modalCs('price-saleOff')}>
-                                                                    {(
-                                                                        (product.detail.price *
-                                                                            (100 - product.detail.saleOff)) /
-                                                                        100
-                                                                    ).toLocaleString('vi-VN', {
-                                                                        style: 'currency',
-                                                                        currency: 'VND',
-                                                                    })}
-                                                                </span>
-                                                            )}
-
-                                                            <span className={modalCs('price')}>
-                                                                {product.detail.price.toLocaleString('vi-VN', {
-                                                                    style: 'currency',
-                                                                    currency: 'VND',
-                                                                })}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className={modalCs('product-disc-btns')}>
-                                                            <div className={modalCs('product-disc-quantity')}>
-                                                                <Button
-                                                                    hover
-                                                                    className={modalCs('decrease-btn')}
-                                                                    theme="primary"
-                                                                    type="icon"
-                                                                    size="small"
-                                                                    animation
-                                                                    handleClick={() => handleDecreaseQuantity(product)}
-                                                                    icon={<Icons.minus width="2rem" height="2rem" />}
-                                                                />
-                                                                <Button
-                                                                    hover
-                                                                    className={modalCs('increse-btn')}
-                                                                    theme="primary"
-                                                                    type="icon"
-                                                                    size="small"
-                                                                    animation
-                                                                    handleClick={() => handleIncreaseQuantity(product)}
-                                                                    icon={<Icons.plus width="2rem" height="2rem" />}
-                                                                />
-                                                            </div>
-                                                            <Button
-                                                                className={modalCs('bin-btn')}
-                                                                theme="blank"
-                                                                type="icon"
-                                                                size="small"
-                                                                handleClick={() => handleDeleteProduct(product)}
-                                                                icon={
-                                                                    <img
-                                                                        className={modalCs('bin-img')}
-                                                                        src={images.bin}
-                                                                    />
-                                                                }
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <ProductList products={cart.products} />
 
                                     <div className={modalCs('orders-bill')}>
                                         <div className={modalCs('orders-bill-item')}>
-                                            Subtotal:
+                                            Tổng tiền hàng:
                                             <span className={modalCs('orders-bill-money')}>
-                                                {cart.subTotal.toLocaleString('vi-VN', {
+                                                {cart.price.subTotal.toLocaleString('vi-VN', {
                                                     style: 'currency',
                                                     currency: 'VND',
                                                 })}
                                             </span>
                                         </div>
-                                        <div className={modalCs('orders-bill-item')}>
-                                            Delivery charges:
-                                            <span className={modalCs('orders-bill-money')}>
-                                                {cart.deliveryCharge.toLocaleString('vi-VN', {
-                                                    style: 'currency',
-                                                    currency: 'VND',
-                                                })}
-                                            </span>
-                                        </div>
+                                        {currentOrderType === 2 && (
+                                            <div className={modalCs('orders-bill-item')}>
+                                                Phí giao hàng:
+                                                <span className={modalCs('orders-bill-money')}>
+                                                    {cart.price.deliveryCharge.toLocaleString('vi-VN', {
+                                                        style: 'currency',
+                                                        currency: 'VND',
+                                                    })}
+                                                </span>
+                                            </div>
+                                        )}
                                         <div className={modalCs('orders-bill-item', 'total')}>
-                                            Grand total:
+                                            Tổng tiền:
                                             <span className={modalCs('orders-bill-money')}>
-                                                {cart.total.toLocaleString('vi-VN', {
+                                                {(currentOrderType === 1
+                                                    ? cart.price.subTotal
+                                                    : cart.price.subTotal + cart.price.deliveryCharge
+                                                ).toLocaleString('vi-VN', {
                                                     style: 'currency',
                                                     currency: 'VND',
                                                 })}
                                             </span>
                                         </div>
-                                        <Button size="small" className={modalCs('orders-checkout-btn')}>
-                                            Checkout
+                                        <Button
+                                            size="small"
+                                            animation
+                                            hover
+                                            link={cart.statusId === 1 && `/cart/checkout`}
+                                            requireLogin={user ? false : true}
+                                            handleClick={handleCloseModal}
+                                            className={modalCs('orders-checkout-btn', {
+                                                disable: cart.statusId > 1,
+                                            })}
+                                        >
+                                            {cart.status}
                                         </Button>
                                     </div>
                                 </>
                             ) : (
                                 <div className={modalCs('empty-wrapper')}>
                                     <img className={modalCs('empty-img')} src={images.emptyCart} alt="empty-cart" />
-                                    <p className={modalCs('message')}>Your cart is empty</p>
-                                    <p className={modalCs('advice')}>Add an item and start making your order</p>
+                                    <p className={modalCs('message')}>Giỏ hàng của bạn đang trống</p>
+                                    <p className={modalCs('advice')}>Hãy thêm sản phẩm vào giỏ hàng</p>
                                 </div>
                             )}
                         </div>

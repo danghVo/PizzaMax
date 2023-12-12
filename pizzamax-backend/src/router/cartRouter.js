@@ -4,6 +4,7 @@ const { CartController } = require('../controller');
 router.all('/cart/:uuid/*', CartController.checkCart);
 
 router.post('/cart/:uuid/addToCart', CartController.addToCart);
+router.post('/cart/:uuid/getDeliveryCharge', CartController.updateDeliveryCharge);
 router.delete('/cart/:uuid/removeFromCart/:detailUUID', CartController.removeFromCart);
 router.patch('/cart/:uuid/updateProduct/:detailUUID', CartController.updateProduct);
 router.patch('/cart/:uuid/checkout', CartController.checkout);

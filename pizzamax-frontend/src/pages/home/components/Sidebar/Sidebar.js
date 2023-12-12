@@ -6,21 +6,6 @@ import SideBarItem from './SidebarItem/SidebarItem';
 
 const cs = classNames.bind(styles);
 
-const categories = [
-    'Value Deals',
-    'Promo Deals',
-    'Max Value Deals',
-    '2 Big 2 Better',
-    'Royal Crown Pizza',
-    'Max Platter',
-    'Appetizers',
-    'Chicken Pizzas',
-    'Beef & Veggie Pizzas',
-    'Sandwiches',
-    'Lasagne and Pastas',
-    'Beverages',
-];
-
 function Sidebar({ categories }) {
     const [chosing, setChosing] = useState(0);
     const [inView, setInView] = useState(true);
@@ -29,17 +14,16 @@ function Sidebar({ categories }) {
     const titleRef = useRef();
 
     useEffect(() => {
-        window.addEventListener('scroll', () => handleStick());
+        const handleStick = () => {
+            const distanceTopOfTitle = titleRef.current.getBoundingClientRect().top;
 
-        return window.removeEventListener('scroll', () => handleStick());
+            if (distanceTopOfTitle < 40) setInView(false);
+            else setInView(true);
+        };
+        window.addEventListener('scroll', handleStick);
+
+        return () => window.removeEventListener('scroll', handleStick);
     }, [inView]);
-
-    const handleStick = () => {
-        const distanceTopOfTitle = titleRef.current.getBoundingClientRect().top;
-
-        if (distanceTopOfTitle < 40) setInView(false);
-        else setInView(true);
-    };
 
     const handleChooseCategorie = (item, index) => {
         setChosing(index);
@@ -55,7 +39,7 @@ function Sidebar({ categories }) {
         <div ref={wrapperRef} className={cs('wrapper')}>
             <div className={cs('inner')}>
                 <h2 ref={titleRef} className={cs('title')}>
-                    All Categories
+                    Loại sản phẩm
                 </h2>
 
                 <div className={cs('categorie-list', { stick: !inView })}>

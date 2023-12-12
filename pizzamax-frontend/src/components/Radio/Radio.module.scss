@@ -1,0 +1,28 @@
+.wrapper {
+    display: flex;
+    align-items: center;
+    margin: 4px 0;
+    margin-left: 8px;
+}
+
+.title {
+    font-weight: 500;
+    font-size: 1.8rem;
+}
+
+.selection-wrapper {
+    margin: 0 12px;
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.selection-value {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.selection-label {
+    cursor: pointer;
+    // margin-right: 12px;
+    display: inline-block;
+}

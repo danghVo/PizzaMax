@@ -1,6 +1,8 @@
 const throwError = require('../utils/throwError');
 const { UserService, AuthService } = require('../service');
 const Controller = require('./Controller');
+const CartService = require('../service/CartService');
+const S3Service = require('../service/S3Service');
 
 class UserController extends Controller {
     constructor() {
@@ -21,14 +23,16 @@ class UserController extends Controller {
     async getUserInfor(req, res, next) {
         try {
             const user = res.locals.user;
-            if (user.getDataValue('role') !== 'admin') {
+            if (user.role !== 'admin') {
+                if (req.body.currentCart) {
+                    await CartService.setCartToCartOfUser(user, req.body.currentCart);
+                }
                 const userInfor = await UserService.getUserInfor(user);
                 res.locals.user = userInfor;
             } else res.locals.user = user.toJSON();
-
             next();
         } catch (error) {
-            return res.status(error.code || 500).send({ error: error.message || error });
+            return res.status(200).send({ error: error.message || error });
         }
     }
 
@@ -41,9 +45,12 @@ class UserController extends Controller {
 
             const userInfor = await UserService.getUserInfor(user);
 
-            return res.json(userInfor);
+            return res.json({
+                ...userInfor,
+                password: undefined,
+            });
         } catch (error) {
-            return res.status(error.code || 500).send({ error: error.message || error });
+            return res.status(200).send({ error: error.message || error });
         }
     }
 
@@ -57,35 +64,77 @@ class UserController extends Controller {
         }
     }
 
-    async updateUser(req, res, next) {
+    async createAdmin(req, res) {
         try {
-            const payload = req.body;
-            const user = res.locals.user;
+            await UserService.createAdmin(req.body);
 
-            if (payload) {
-                delete payload.phoneNumber;
-                delete payload.password;
-            }
+            const result = await UserService.getAllUser();
 
-            await UserService.updateUser(user, payload);
-
-            res.status(200).send('Update successfully');
+            res.json(result);
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
 
-    async changePassword(req, res) {
+    async update(req, res) {
         try {
             const user = res.locals.user;
 
-            await UserService.changePassword(user, req.body);
+            await UserService.updateUser(user, req.body);
 
-            res.status(200).send('Change password successfully');
+            const userInfor = await UserService.getUserInfor(user);
+
+            return res.json({
+                ...userInfor,
+                password: undefined,
+            });
         } catch (error) {
             return res.status(error.code || 500).send({ error: error.message || error });
         }
     }
+
+    async createNewCart(req, res) {
+        try {
+            const user = res.locals.user;
+
+            const result = await CartService.createNewCart(user.id);
+
+            res.json(result);
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
+    async addAvatar(req, res) {
+        try {
+            const image = req.file;
+            const user = res.locals.user;
+
+            await UserService.addAvatar(user, image);
+            const userInfor = await UserService.getUserInfor(user);
+
+            return res.json({
+                ...userInfor,
+                password: undefined,
+            });
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: 'Có lỗi xảy ra. Hãy thử lại sau' });
+        }
+    }
+
+    async getAllUser(req, res) {
+        try {
+            const result = await UserService.getAllUser();
+
+            res.json(result);
+        } catch (error) {
+            return res.status(error.code || 500).send({ error: error.message || error });
+        }
+    }
+
+    async deleteUser() {}
+
+    async updateUser() {}
 }
 
 module.exports = new UserController();

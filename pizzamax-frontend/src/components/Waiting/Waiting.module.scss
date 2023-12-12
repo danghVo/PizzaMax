@@ -1,0 +1,12 @@
+.wrapper {
+    display: flex;
+    justify-content: space-between;
+}
+
+.dot {
+    background-color: var(--primary-color);
+    width: 10px;
+    height: 10px;
+    margin: 0 4px;
+    border-radius: 40%;
+}

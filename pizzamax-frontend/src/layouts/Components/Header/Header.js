@@ -7,11 +7,15 @@ import images from '~/assets/images';
 import Location from './Location';
 import UserAction from './UserAction';
 import Cart from './Cart';
+import { useSelector } from 'react-redux';
+import { userSelector } from '~/store/user';
 
 const cs = classNames.bind(styles);
 
 function Header() {
     const [isScrollThrough, setIsScrollThrough] = useState();
+
+    const user = useSelector(userSelector.user);
 
     useEffect(() => {
         window.addEventListener('scroll', handleScrollFixed);
@@ -34,11 +38,11 @@ function Header() {
                     <img src={images.logo} alt="Logo" />
                 </Link>
 
-                <Location />
+                <Location user={user} />
 
                 <div className={cs('actions')}>
-                    <UserAction />
-                    <Cart />
+                    <UserAction user={user} />
+                    <Cart user={user} />
                 </div>
             </div>
         </div>

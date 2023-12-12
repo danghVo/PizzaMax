@@ -9,6 +9,7 @@ class TimeService extends Service {
 
     form(payload, mustFull = true) {
         const time = {
+            name: payload?.name,
             fromDay: payload?.fromDay,
             toDay: payload?.toDay,
             fromTime: payload?.fromTime,
@@ -31,8 +32,8 @@ class TimeService extends Service {
         const isExist = await this.find(time);
 
         if (isExist) {
-            throwError(409, 'Time has already existed');
-        } else return await this.model.create(time);
+            throwError(409, 'Đã tồn tại thời gian này');
+        } else return await this.create(time);
     }
 
     async updateTime(timeId, payload) {
@@ -44,11 +45,14 @@ class TimeService extends Service {
         } else throwError(500, 'Update fail');
     }
 
-    async deleteTime(timeId) {
+    async deleteTime(timeId, TypeService) {
         const isExist = await this.find(timeId);
 
-        if (isExist) return await this.delete(timeId);
-        else throwError(404, 'Time doesnt exist');
+        if (isExist) {
+            const isTypeHaveTime = await TypeService.find(timeId);
+            if (isTypeHaveTime) throwError(409, 'Thời gian đang được sử dụng');
+            else return await this.delete(timeId);
+        } else throwError(404, 'Time doesnt exist');
     }
 }
 

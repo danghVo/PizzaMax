@@ -1,5 +1,5 @@
 import { validInput } from '~/utils';
 
-const valid = (sameValue) => (checkedData) => validInput(checkedData !== sameValue, `Must the same value`);
+const valid = (sameValue, message) => (checkedData) => validInput(checkedData !== sameValue, message);
 
-export default (sameValue) => ({ valid: valid(sameValue) });
+export default (...passValue) => ({ valid: valid(...passValue) });

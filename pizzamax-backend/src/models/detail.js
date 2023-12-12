@@ -20,7 +20,6 @@ module.exports = (sequelize, DataTypes) => {
             return {
                 ...detail,
                 productId: undefined,
-                cartUUID: undefined,
                 price: parseInt(detail.price),
                 quantity: parseInt(detail.quantity),
             };
